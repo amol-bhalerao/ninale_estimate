@@ -22,7 +22,10 @@ import "./styles.css";
 const api = {
   async request(path, options = {}) {
     const local = ["127.0.0.1", "localhost"].includes(window.location.hostname);
-    const url = local ? `/api/${path}` : `/backend.php?r=${encodeURIComponent(path)}`;
+    const appBase = window.location.pathname.endsWith("/")
+      ? window.location.pathname
+      : window.location.pathname.replace(/[^/]*$/, "");
+    const url = local ? `/api/${path}` : `${appBase}backend.php?r=${encodeURIComponent(path)}`;
     const finalUrl = `${url}${url.includes("?") ? "&" : "?"}_=${Date.now()}`;
     const response = await fetch(finalUrl, {
       ...options,
@@ -147,8 +150,38 @@ function App() {
   async function createProject(templateId = "") {
     const template = templates.find((row) => String(row.id) === String(templateId));
     if (!template) {
-      setStatus("Choose a template first. Empty projects are not saved.");
-      setView("templates");
+      const draft = {
+        id: null,
+        isDraft: true,
+        name: `Blank Estimate ${new Date().toLocaleDateString("en-IN")}`,
+        work_type: "General",
+        template_id: null,
+        payload: {
+          meta: {
+            workType: "General",
+            title: `Blank Estimate ${new Date().toLocaleDateString("en-IN")}`,
+            subtitle: "",
+            division: "",
+            subdivision: "",
+            preparedBy: "Executive Engineer",
+          },
+          adjustments: {
+            gstPercent: 18,
+            royaltyPercent: 10.28,
+            cementRatePerMt: 0,
+            steelRatePerMt: 0,
+            labourComponentPercent: 33.24,
+            materialComponentPercent: 53.72,
+            fuelComponentPercent: 13.04,
+          },
+          items: [],
+          leadStatement: [],
+          leadCharges: [],
+        },
+      };
+      setActiveProject(draft);
+      setStatus("Blank draft created. Add items before saving.");
+      setView("adjust");
       return;
     }
     const body = {
@@ -181,9 +214,17 @@ function App() {
       work_type: project.work_type,
       payload: project.payload,
     };
-    await api.updateProject(project.id, body);
-    setProjects((rows) => rows.map((row) => (row.id === project.id ? project : row)));
+    if (project.id) {
+      await api.updateProject(project.id, body);
+      setProjects((rows) => rows.map((row) => (row.id === project.id ? project : row)));
+    } else {
+      const created = await api.createProject(body);
+      project = { ...project, id: created.id, isDraft: false, payload: created.payload };
+      setActiveProject(project);
+      setProjects((rows) => [project, ...rows]);
+    }
     setStatus("Saved");
+    setView("report");
   }
 
   function openProject(project, nextView = "adjust") {
@@ -280,8 +321,8 @@ function App() {
         </header>
 
         {error && <div className="alert">{error}</div>}
-        {view === "dashboard" && <Dashboard activeProject={activeProject} projects={projects} templates={templates} onCreate={createProject} />}
-        {view === "projects" && <Projects projects={projects} activeProject={activeProject} openProject={openProject} onCreate={createProject} printProject={printProject} />}
+        {view === "dashboard" && <Dashboard activeProject={activeProject} projects={projects} templates={templates} onCreate={createProject} openProject={openProject} printProject={printProject} />}
+        {view === "projects" && <Projects projects={projects} activeProject={activeProject} templates={templates} openProject={openProject} onCreate={createProject} printProject={printProject} />}
         {view === "adjust" && (
           <Adjustment project={activeProject} templates={templates} updatePayload={updatePayload} saveProject={saveProject} onCreate={createProject} />
         )}
@@ -317,7 +358,7 @@ function Login({ onLogin, error }) {
   );
 }
 
-function Dashboard({ activeProject, projects, templates, onCreate }) {
+function Dashboard({ activeProject, projects, templates, onCreate, openProject, printProject }) {
   const totals = activeProject ? calculate(activeProject.payload) : null;
   const categories = useMemo(() => {
     return templates.reduce((groups, template) => {
@@ -327,6 +368,7 @@ function Dashboard({ activeProject, projects, templates, onCreate }) {
       return groups;
     }, {});
   }, [templates]);
+  const recentProjects = projects.slice(0, 8);
   return (
     <section className="panel-grid">
       <Stat label="Projects" value={projects.length} />
@@ -335,8 +377,28 @@ function Dashboard({ activeProject, projects, templates, onCreate }) {
       <Stat label="Items In Estimate" value={activeProject?.payload?.items?.length || 0} />
       <div className="wide-panel">
         <div className="section-title">
-          <h2>Start New Estimate</h2>
-          <button onClick={() => onCreate(templates[0]?.id)}><Plus size={16} /> Use first template</button>
+          <h2>Project Dashboard</h2>
+          <CreateProjectMenu templates={templates} onCreate={onCreate} />
+        </div>
+        <div className="dashboard-projects">
+          {recentProjects.map((project) => {
+            const projectTotals = calculate(project.payload);
+            return (
+              <ProjectCard
+                key={project.id}
+                active={activeProject?.id === project.id}
+                project={project}
+                totals={projectTotals}
+                openProject={openProject}
+                printProject={printProject}
+              />
+            );
+          })}
+        </div>
+      </div>
+      <div className="wide-panel">
+        <div className="section-title">
+          <h2>Estimate Categories</h2>
         </div>
         <div className="category-grid">
           {Object.entries(categories).map(([category, rows], index) => (
@@ -354,16 +416,46 @@ function Dashboard({ activeProject, projects, templates, onCreate }) {
             </motion.article>
           ))}
         </div>
-        <div className="template-strip">
+      </div>
+    </section>
+  );
+}
+
+function CreateProjectMenu({ templates, onCreate }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="create-menu">
+      <button onClick={() => setOpen((value) => !value)}><Plus size={16} /> Create new project</button>
+      {open && (
+        <div className="create-popover">
+          <button onClick={() => { onCreate(""); setOpen(false); }}>Start blank draft</button>
           {templates.map((template) => (
-            <button key={template.id} onClick={() => onCreate(template.id)}>
+            <button key={template.id} onClick={() => { onCreate(template.id); setOpen(false); }}>
               <strong>{template.name}</strong>
-              <span>{template.description}</span>
+              <span>{template.work_type}</span>
             </button>
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+function ProjectCard({ project, totals, active, openProject, printProject }) {
+  return (
+    <article className={clsx("project-card", active && "active-project")}>
+      <div>
+        <span className="project-type">{project.work_type}</span>
+        <strong>{project.name}</strong>
+        <small>{project.payload.items?.length || 0} items</small>
       </div>
-    </section>
+      <b>Rs. {currency(totals.tenderAmount)}</b>
+      <div className="row-actions">
+        <button onClick={() => openProject(project, "adjust")}><Settings2 size={15} /> Edit</button>
+        <button onClick={() => openProject(project, "report")}><FileText size={15} /> Report</button>
+        <button onClick={() => printProject(project)}><Printer size={15} /> Print</button>
+      </div>
+    </article>
   );
 }
 
@@ -376,29 +468,18 @@ function Stat({ label, value }) {
   );
 }
 
-function Projects({ projects, activeProject, openProject, onCreate, printProject }) {
+function Projects({ projects, activeProject, templates, openProject, onCreate, printProject }) {
   return (
     <section className="surface">
       <div className="section-title">
         <h2>Projects</h2>
-        <button onClick={() => onCreate()}><Plus size={16} /> New from template</button>
+        <CreateProjectMenu templates={templates} onCreate={onCreate} />
       </div>
       <div className="project-list">
         {projects.map((project) => {
           const totals = calculate(project.payload);
           return (
-            <article key={project.id} className={activeProject?.id === project.id ? "selected row-card" : "row-card"}>
-              <span>
-                <strong>{project.name}</strong>
-                <small>{project.work_type} / {project.payload.items?.length || 0} items</small>
-              </span>
-              <b>Rs. {currency(totals.tenderAmount)}</b>
-              <div className="row-actions">
-                <button onClick={() => openProject(project, "adjust")}><Settings2 size={15} /> Edit</button>
-                <button onClick={() => openProject(project, "report")}><FileText size={15} /> Report</button>
-                <button onClick={() => printProject(project)}><Printer size={15} /> Print</button>
-              </div>
-            </article>
+            <ProjectCard key={project.id} active={activeProject?.id === project.id} project={project} totals={totals} openProject={openProject} printProject={printProject} />
           );
         })}
       </div>
@@ -479,6 +560,10 @@ function Adjustment({ project, updatePayload, saveProject, onCreate, templates }
           <div className="section-title">
             <h2>Editable Estimate Table</h2>
             <button onClick={addItem}><Plus size={16} /> Item</button>
+          </div>
+          <div className="table-total-banner">
+            <span>Total Estimate Amount</span>
+            <strong>Rs. {currency(totals.tenderAmount)}</strong>
           </div>
           <EditableEstimateTable items={totals.computedItems} updateItem={updateItem} />
         </div>
@@ -636,8 +721,8 @@ function Report({ project, onEdit, onPrint }) {
   if (!project) return <EmptyReport />;
   const payload = project.payload;
   const totals = calculate(payload);
-  const abstractPages = chunk(totals.computedItems, 14);
-  const ratePages = chunk(totals.computedItems, 3);
+  const abstractPages = chunk(totals.computedItems, 8);
+  const ratePages = chunk(totals.computedItems, 2);
   let pageNo = 1;
   const sections = [
     ["Cover", 1],
@@ -645,9 +730,11 @@ function Report({ project, onEdit, onPrint }) {
     ["K1, K2, K3 Calculation", 3],
     ["Abstract Estimate", 4],
     ["Lead Statement", 4 + abstractPages.length],
-    ["Rate Analysis", 5 + abstractPages.length],
-    ["Estimate Summary", 5 + abstractPages.length + ratePages.length],
-    ["Machinery / POL Lead Charges", 6 + abstractPages.length + ratePages.length],
+    ["Material Statement", 5 + abstractPages.length],
+    ["Escalation Component Statement", 6 + abstractPages.length],
+    ["Rate Analysis", 7 + abstractPages.length],
+    ["Estimate Summary", 7 + abstractPages.length + ratePages.length],
+    ["Machinery / POL Lead Charges", 8 + abstractPages.length + ratePages.length],
   ];
   return (
     <section className="report-stack">
@@ -701,6 +788,18 @@ function Report({ project, onEdit, onPrint }) {
         <LeadStatement rows={payload.leadStatement} />
       </ReportPage>
 
+      <ReportPage pageNo={pageNo++}>
+        <ReportHeader payload={payload} accent="Statement" />
+        <h2 className="decorated-heading">Material Statement</h2>
+        <MaterialStatement items={totals.computedItems} />
+      </ReportPage>
+
+      <ReportPage pageNo={pageNo++}>
+        <ReportHeader payload={payload} accent="Components" />
+        <h2 className="decorated-heading">Escalation Component Statement</h2>
+        <ComponentStatement payload={payload} totals={totals} />
+      </ReportPage>
+
       {ratePages.map((items, index) => (
         <ReportPage pageNo={pageNo++} key={`rate-${index}`}>
           <ReportHeader payload={payload} />
@@ -744,6 +843,7 @@ function MiniReport({ project, totals = calculate(project.payload) }) {
 
 function EditableEstimateTable({ items, updateItem }) {
   const numericFields = ["rate", "quantity", "cementRate", "royaltyRate", "machineryRate", "labourRate", "polRate"];
+  const units = ["Cum", "/ Cum", "Sqm", "Rmt", "Nos", "MT", "Kg", "Hours", "Bag", "Litre", "Each", "Job"];
   return (
     <div className="editable-table-wrap">
       <table className="editable-estimate">
@@ -777,18 +877,20 @@ function EditableEstimateTable({ items, updateItem }) {
                 <input type="number" step="0.01" value={item.rate ?? 0} onChange={(event) => updateItem(index, "rate", event.target.value)} />
               </td>
               <td>
-                <input value={item.unit || ""} onChange={(event) => updateItem(index, "unit", event.target.value)} />
+                <select value={item.unit || "Cum"} onChange={(event) => updateItem(index, "unit", event.target.value)}>
+                  {units.map((unit) => <option key={unit} value={unit}>{unit}</option>)}
+                </select>
               </td>
               <td>
                 <input type="number" step="0.01" value={item.quantity ?? 0} onChange={(event) => updateItem(index, "quantity", event.target.value)} />
               </td>
-              <td className="readonly-cell">{currency(item.amount)}</td>
+              <td className="readonly-cell money-cell">{currency(item.amount)}</td>
               {numericFields.slice(2).map((field) => (
                 <td key={field}>
                   <input type="number" step="0.01" value={item[field] ?? 0} onChange={(event) => updateItem(index, field, event.target.value)} />
                 </td>
               ))}
-              <td className="readonly-cell">{currency(item.amount)}</td>
+              <td className="readonly-cell money-cell">{currency(item.amount)}</td>
             </tr>
           ))}
         </tbody>
@@ -918,6 +1020,30 @@ function LeadChargeTable({ rows = [] }) {
       </tbody>
     </table>
   );
+}
+
+function MaterialStatement({ items }) {
+  const rows = [
+    ["Cement component", items.reduce((sum, item) => sum + item.cementCost, 0)],
+    ["Royalty component", items.reduce((sum, item) => sum + item.royaltyCost, 0)],
+    ["Machinery component", items.reduce((sum, item) => sum + item.machineryCost, 0)],
+    ["Labour component", items.reduce((sum, item) => sum + item.labourAmount, 0)],
+    ["POL component", items.reduce((sum, item) => sum + item.polAmount, 0)],
+    ["Material excluding above", items.reduce((sum, item) => sum + item.materialAmount, 0)],
+  ];
+  return <SimpleTable rows={rows} />;
+}
+
+function ComponentStatement({ payload, totals }) {
+  const rows = [
+    ["K1 Labour component", `${payload.adjustments.labourComponentPercent}%`],
+    ["K2 Material component", `${payload.adjustments.materialComponentPercent}%`],
+    ["K3 Fuel component", `${payload.adjustments.fuelComponentPercent}%`],
+    ["Tender amount considered", totals.tenderAmount],
+    ["Cost excluding royalty, cement, steel and GST", totals.costExcluding],
+    ["GST provision", totals.gst],
+  ];
+  return <SimpleTable rows={rows} />;
 }
 
 function RateAnalysis({ item }) {
