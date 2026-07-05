@@ -1,8 +1,11 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap");
+
 :root {
-  color: #17211d;
-  background: #f4f2ee;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #182235;
+  background: #eef4ff;
+  font-family: Inter, Roboto, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 15px;
+  font-variant-numeric: tabular-nums;
 }
 
 * {
@@ -10,7 +13,12 @@
 }
 
 body {
+  background:
+    radial-gradient(circle at 8% 8%, rgba(20, 184, 166, 0.18), transparent 30%),
+    radial-gradient(circle at 92% 4%, rgba(245, 158, 11, 0.18), transparent 26%),
+    linear-gradient(135deg, #f8fbff 0%, #eef4ff 45%, #fff7ed 100%);
   margin: 0;
+  overflow-x: hidden;
 }
 
 button, input, textarea {
@@ -27,7 +35,9 @@ button {
 
 .login-screen {
   align-items: center;
-  background: linear-gradient(135deg, #1f3a35, #6f4937 54%, #d8b35f);
+  background:
+    linear-gradient(120deg, rgba(17, 24, 39, 0.72), rgba(15, 118, 110, 0.62)),
+    linear-gradient(135deg, #0f172a, #0f766e 48%, #f59e0b);
   display: flex;
   min-height: 100vh;
   justify-content: center;
@@ -35,10 +45,11 @@ button {
 }
 
 .login-panel {
-  background: #fffdf8;
-  border: 1px solid #dacfc1;
-  border-radius: 8px;
-  box-shadow: 0 18px 70px rgba(31, 42, 38, 0.28);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  border-radius: 18px;
+  box-shadow: 0 26px 90px rgba(15, 23, 42, 0.34);
   display: grid;
   gap: 14px;
   max-width: 420px;
@@ -48,8 +59,8 @@ button {
 
 .login-mark {
   align-items: center;
-  background: #1f3a35;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  border-radius: 16px;
   color: white;
   display: flex;
   height: 56px;
@@ -80,8 +91,8 @@ button {
 .editable-estimate textarea,
 .template-picker select {
   background: #fff;
-  border: 1px solid #cfc6b9;
-  border-radius: 6px;
+  border: 1px solid #d8e2ef;
+  border-radius: 12px;
   color: #17211d;
   min-width: 0;
   padding: 10px 11px;
@@ -100,8 +111,8 @@ button {
 .template-picker button,
 .template-edit button,
 .empty button {
-  background: #1f3a35;
-  border-radius: 6px;
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  border-radius: 12px;
   color: white;
   justify-content: center;
   min-height: 40px;
@@ -114,25 +125,32 @@ button {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 74px 1fr;
+  grid-template-columns: 74px minmax(0, 1fr);
   min-height: 100vh;
 }
 
 .app-shell.sidebar-expanded {
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 74px minmax(0, 1fr);
 }
 
 .sidebar {
-  background: #1f2f2b;
+  background: linear-gradient(180deg, #101827, #0f766e 58%, #1d4ed8);
   color: #fffdf8;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  padding: 18px 14px;
+  overflow: hidden;
+  padding: 18px 12px;
   position: sticky;
   top: 0;
-  transition: width 180ms ease;
+  transition: width 220ms ease, box-shadow 220ms ease;
+  width: 74px;
   z-index: 30;
+}
+
+.sidebar-expanded .sidebar {
+  box-shadow: 18px 0 50px rgba(15, 23, 42, 0.22);
+  width: 280px;
 }
 
 .brand {
@@ -167,7 +185,7 @@ button {
 
 .sidebar button {
   background: transparent;
-  border-radius: 6px;
+  border-radius: 14px;
   color: #f7efe3;
   padding: 11px 12px;
   text-align: left;
@@ -175,7 +193,8 @@ button {
 
 .sidebar button.active,
 .sidebar button:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateX(2px);
 }
 
 .logout {
@@ -184,7 +203,7 @@ button {
 
 .workspace {
   min-width: 0;
-  padding: 22px;
+  padding: 22px clamp(14px, 2vw, 28px);
 }
 
 .topbar {
@@ -221,9 +240,9 @@ button {
 }
 
 .icon-button {
-  background: #fffdf8;
-  border: 1px solid #d9d0c4;
-  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid #dbe7f3;
+  border-radius: 14px;
   color: #23332f;
   height: 42px;
   justify-content: center;
@@ -252,10 +271,11 @@ button {
 .stat,
 .surface,
 .wide-panel {
-  background: #fffdf8;
-  border: 1px solid #d8cfc2;
-  border-radius: 8px;
-  padding: 18px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(216, 226, 239, 0.94);
+  border-radius: 18px;
+  box-shadow: 0 18px 50px rgba(30, 41, 59, 0.08);
+  padding: 20px;
 }
 
 .stat span,
@@ -310,24 +330,48 @@ h2 {
 }
 
 .template-strip,
-.template-grid {
+.template-grid,
+.category-grid {
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .template-strip button,
-.template-grid article {
+.template-grid article,
+.category-card {
   align-items: start;
-  background: #f8f4ec;
-  border: 1px solid #d8cfc2;
-  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(240, 249, 255, 0.9)),
+    linear-gradient(135deg, #14b8a6, #f59e0b);
+  border: 1px solid #d8e7f5;
+  border-radius: 18px;
+  box-shadow: 0 10px 26px rgba(30, 41, 59, 0.08);
   color: #17211d;
   display: grid;
   gap: 6px;
   justify-content: stretch;
   padding: 14px;
   text-align: left;
+}
+
+.category-grid {
+  margin-bottom: 16px;
+}
+
+.category-card strong {
+  font-size: 1.12rem;
+}
+
+.category-card > span {
+  color: #0f766e;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.category-card p {
+  color: #566477;
+  min-height: 48px;
 }
 
 .template-strip span,
@@ -342,9 +386,9 @@ h2 {
 }
 
 .row-card {
-  background: #f8f4ec;
-  border: 1px solid #d8cfc2;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #ffffff, #f8fbff);
+  border: 1px solid #d8e7f5;
+  border-radius: 16px;
   color: #17211d;
   display: grid;
   gap: 12px;
@@ -444,15 +488,15 @@ details[open] summary {
 .rate-table {
   display: grid;
   gap: 7px;
-  overflow-x: auto;
+  overflow-x: hidden;
 }
 
 .rate-head,
 .rate-row {
   display: grid;
   gap: 8px;
-  grid-template-columns: minmax(220px, 1.5fr) repeat(6, minmax(88px, 1fr));
-  min-width: 980px;
+  grid-template-columns: minmax(260px, 2fr) repeat(6, minmax(72px, 1fr));
+  min-width: 0;
 }
 
 .rate-head {
@@ -471,9 +515,9 @@ details[open] summary {
 }
 
 .template-preview {
-  background: linear-gradient(135deg, #f5ecd8, #e6f0ec);
-  border: 1px solid #d8cfc2;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #ecfeff, #eff6ff 45%, #fff7ed);
+  border: 1px solid #d8e7f5;
+  border-radius: 18px;
   display: grid;
   gap: 6px;
   margin-bottom: 16px;
@@ -486,9 +530,9 @@ details[open] summary {
 }
 
 .template-edit {
-  background: #f7f0df;
-  border: 1px solid #d8cfc2;
-  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(240, 253, 250, 0.9));
+  border: 1px solid #d8e7f5;
+  border-radius: 18px;
   display: grid;
   gap: 14px;
   margin-bottom: 16px;
@@ -512,15 +556,39 @@ details[open] summary {
   justify-items: center;
 }
 
+.report-toolbar {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #d8e7f5;
+  border-radius: 18px;
+  box-shadow: 0 14px 36px rgba(30, 41, 59, 0.1);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  padding: 12px;
+  position: sticky;
+  top: 14px;
+  z-index: 15;
+}
+
+.report-toolbar button {
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  border-radius: 12px;
+  color: #fff;
+  min-height: 38px;
+  padding: 9px 13px;
+}
+
 .report-page {
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
     linear-gradient(135deg, #1f3a35, #d8b35f, #7f4d70) border-box;
-  border: 10px solid transparent;
+  border: 8px solid transparent;
+  border-radius: 20px;
   box-shadow: 0 8px 26px rgba(30, 35, 32, 0.12);
   min-height: 1120px;
   overflow: hidden;
-  padding: 34px;
+  padding: 26px;
   position: relative;
   width: 794px;
 }
@@ -532,14 +600,15 @@ details[open] summary {
 
 .report-content {
   color: #111;
-  font-family: Georgia, "Times New Roman", Times, serif;
+  font-family: Inter, Roboto, ui-sans-serif, system-ui, sans-serif;
   position: relative;
   z-index: 1;
 }
 
 .report-header {
-  background: linear-gradient(135deg, #1f3a35, #4c6f5f);
-  border: 0;
+  background: linear-gradient(135deg, #0f172a, #0f766e);
+  border-bottom: 4px solid #f59e0b;
+  border-radius: 12px;
   color: #fff;
   margin-bottom: 14px;
   padding: 10px 12px;
@@ -556,10 +625,18 @@ details[open] summary {
   text-transform: uppercase;
 }
 
+.report-header small {
+  display: block;
+  font-size: 0.73rem;
+  font-weight: 600;
+  opacity: 0.88;
+}
+
 .decorated-heading {
-  color: #7b3929;
-  font-family: Georgia, "Times New Roman", Times, serif;
-  font-style: italic;
+  color: #0f766e;
+  font-family: Inter, Roboto, ui-sans-serif, system-ui, sans-serif;
+  font-style: normal;
+  font-weight: 900;
   margin: 0 0 14px;
   text-decoration: underline;
   text-decoration-color: #d8b35f;
@@ -605,8 +682,8 @@ details[open] summary {
 .editable-estimate {
   border-collapse: separate;
   border-spacing: 0;
-  font-family: Georgia, "Times New Roman", Times, serif;
-  font-size: 0.82rem;
+  font-family: Inter, Roboto, ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.78rem;
   overflow: hidden;
   table-layout: fixed;
   width: 100%;
@@ -618,8 +695,8 @@ details[open] summary {
 .abstract td,
 .editable-estimate th,
 .editable-estimate td {
-  border-bottom: 1px solid #b9c7be;
-  border-right: 1px solid #b9c7be;
+  border-bottom: 1px solid #c9d8e8;
+  border-right: 1px solid #c9d8e8;
   overflow-wrap: anywhere;
   padding: 5px;
   vertical-align: top;
@@ -629,7 +706,7 @@ details[open] summary {
 .simple-table th,
 .abstract th,
 .editable-estimate th {
-  background: #1f3a35;
+  background: linear-gradient(135deg, #0f172a, #0f766e);
   color: #fff;
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   font-size: 0.72rem;
@@ -654,19 +731,19 @@ details[open] summary {
 .abstract th:first-child,
 .editable-estimate td:first-child,
 .editable-estimate th:first-child {
-  border-left: 1px solid #b9c7be;
+  border-left: 1px solid #c9d8e8;
 }
 
 .simple-table tbody tr:nth-child(even) td,
 .abstract tbody tr:nth-child(even) td,
 .editable-estimate tbody tr:nth-child(even) td {
-  background: #f7f0df;
+  background: #fff7ed;
 }
 
 .simple-table tbody tr:nth-child(odd) td,
 .abstract tbody tr:nth-child(odd) td,
 .editable-estimate tbody tr:nth-child(odd) td {
-  background: #f2f7f4;
+  background: #f0fdfa;
 }
 
 .abstract th {
@@ -678,11 +755,11 @@ details[open] summary {
 }
 
 .col-no { width: 4%; }
-.col-item { width: 25%; }
-.col-rate { width: 8%; }
-.col-unit { width: 6%; }
+.col-item { width: 28%; }
+.col-rate { width: 7%; }
+.col-unit { width: 5%; }
 .col-qty { width: 7%; }
-.col-money { width: 8.33%; }
+.col-money { width: 7.9%; }
 
 .compact-table {
   font-size: 0.7rem;
@@ -707,11 +784,12 @@ details[open] summary {
 }
 
 .editable-table-wrap {
-  overflow-x: auto;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .editable-estimate {
-  min-width: 1180px;
+  min-width: 0;
 }
 
 .editable-estimate input,
@@ -774,7 +852,7 @@ details[open] summary {
 
 .page-watermark {
   color: rgba(31, 58, 53, 0.07);
-  font-family: Georgia, "Times New Roman", Times, serif;
+  font-family: Inter, Roboto, ui-sans-serif, system-ui, sans-serif;
   font-size: 4.8rem;
   font-weight: 900;
   left: 50%;
@@ -837,6 +915,41 @@ details[open] summary {
     min-width: 0;
   }
 
+  .editable-table-wrap,
+  .table-scroll {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  .editable-estimate,
+  .abstract {
+    min-width: 980px;
+  }
+
+  .editable-estimate th:nth-child(2),
+  .editable-estimate td:nth-child(2),
+  .abstract th:nth-child(2),
+  .abstract td:nth-child(2) {
+    box-shadow: 8px 0 18px rgba(15, 23, 42, 0.12);
+    left: 38px;
+    position: sticky;
+    z-index: 4;
+  }
+
+  .editable-estimate th:first-child,
+  .editable-estimate td:first-child,
+  .abstract th:first-child,
+  .abstract td:first-child {
+    left: 0;
+    position: sticky;
+    z-index: 5;
+  }
+
+  .editable-estimate th:nth-child(2),
+  .abstract th:nth-child(2) {
+    z-index: 6;
+  }
+
   .report-page,
   .report-page.landscape {
     min-height: auto;
@@ -847,12 +960,12 @@ details[open] summary {
 
 @media print {
   @page {
-    margin: 8mm;
+    margin: 5mm;
     size: A4 portrait;
   }
 
   @page landscape {
-    margin: 8mm;
+    margin: 5mm;
     size: A4 landscape;
   }
 
@@ -863,6 +976,7 @@ details[open] summary {
   .sidebar,
   .topbar,
   .alert,
+  .report-toolbar,
   .workspace > :not(.report-stack) {
     display: none !important;
   }
@@ -878,36 +992,75 @@ details[open] summary {
   }
 
   .report-page {
-    border: 7px solid transparent;
+    border: 5px solid transparent;
+    border-radius: 0;
     box-shadow: none;
-    height: calc(297mm - 16mm);
+    break-after: page;
+    height: calc(297mm - 10mm);
     min-height: 0;
     overflow: hidden;
+    padding: 12px;
     page-break-after: always;
-    width: calc(210mm - 16mm);
+    width: calc(210mm - 10mm);
   }
 
   .report-page.landscape {
-    height: calc(210mm - 16mm);
+    height: calc(210mm - 10mm);
     page: landscape;
-    width: calc(297mm - 16mm);
+    width: calc(297mm - 10mm);
   }
 
-  .table-scroll {
+  .table-scroll,
+  .editable-table-wrap {
     overflow: visible !important;
   }
 
-  .abstract,
-  .simple-table {
+  table {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  tr {
+    break-inside: avoid;
     page-break-inside: avoid;
   }
 
   .abstract {
-    font-size: 0.55rem;
+    font-size: 0.48rem;
   }
 
   .simple-table {
-    font-size: 0.72rem;
+    font-size: 0.62rem;
+  }
+
+  .simple-table th,
+  .simple-table td,
+  .abstract th,
+  .abstract td {
+    padding: 2px 3px;
+  }
+
+  .decorated-heading {
+    font-size: 0.98rem;
+    margin-bottom: 7px;
+  }
+
+  .report-header {
+    margin-bottom: 8px;
+    padding: 7px 9px;
+  }
+
+  .rate-analysis {
+    margin-bottom: 8px;
+  }
+
+  .rate-analysis h3,
+  .rate-analysis p {
+    margin-bottom: 4px;
+  }
+
+  .signatures {
+    margin-top: 42px;
   }
 
   .report-header {

@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
+import clsx from "clsx";
+import { motion } from "framer-motion";
 import {
   Calculator,
   ClipboardList,
@@ -13,6 +15,7 @@ import {
   Save,
   Settings2,
   TableProperties,
+  Wand2,
 } from "lucide-react";
 import "./styles.css";
 
@@ -20,11 +23,14 @@ const api = {
   async request(path, options = {}) {
     const local = ["127.0.0.1", "localhost"].includes(window.location.hostname);
     const url = local ? `/api/${path}` : `/backend.php?r=${encodeURIComponent(path)}`;
-    const response = await fetch(url, {
+    const finalUrl = `${url}${url.includes("?") ? "&" : "?"}_=${Date.now()}`;
+    const response = await fetch(finalUrl, {
       ...options,
+      cache: "no-store",
       headers: { "Content-Type": "application/json", ...(options.headers || {}) },
     });
-    const data = await response.json();
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : {};
     if (!response.ok) {
       throw new Error(data.error || "Request failed");
     }
@@ -105,6 +111,7 @@ function App() {
   const [status, setStatus] = useState("Loading workspace...");
   const [error, setError] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarPinned, setSidebarPinned] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -128,16 +135,26 @@ function App() {
 
   async function onLogin(event) {
     event.preventDefault();
-    await api.login();
-    setLoggedIn(true);
+    try {
+      await api.login();
+      setLoggedIn(true);
+      setError("");
+    } catch (err) {
+      setError(err.message);
+    }
   }
 
   async function createProject(templateId = "") {
     const template = templates.find((row) => String(row.id) === String(templateId));
+    if (!template) {
+      setStatus("Choose a template first. Empty projects are not saved.");
+      setView("templates");
+      return;
+    }
     const body = {
-      name: template ? `${template.work_type} Estimate ${new Date().toLocaleDateString("en-IN")}` : "New Empty Estimate",
-      work_type: template?.work_type || "Bridge",
-      template_id: template?.id || null,
+      name: `${template.work_type} Estimate ${new Date().toLocaleDateString("en-IN")}`,
+      work_type: template.work_type,
+      template_id: template.id,
     };
     const created = await api.createProject(body);
     const project = {
@@ -154,6 +171,10 @@ function App() {
 
   async function saveProject(project = activeProject) {
     if (!project) return;
+    if (!(project.payload.items || []).length) {
+      setStatus("Add at least one item before saving.");
+      return;
+    }
     setStatus("Saving...");
     const body = {
       name: project.name,
@@ -206,8 +227,12 @@ function App() {
   }
 
   return (
-    <div className={`app-shell ${sidebarOpen ? "sidebar-expanded" : "sidebar-collapsed"}`}>
-      <aside className="sidebar">
+    <div className={clsx("app-shell", sidebarOpen ? "sidebar-expanded" : "sidebar-collapsed")}>
+      <aside
+        className="sidebar"
+        onMouseEnter={() => window.innerWidth > 860 && setSidebarOpen(true)}
+        onMouseLeave={() => window.innerWidth > 860 && !sidebarPinned && setSidebarOpen(false)}
+      >
         <div className="brand">
           <Calculator size={24} />
           <div>
@@ -226,6 +251,10 @@ function App() {
             );
           })}
         </nav>
+        <button className="pin-sidebar" onClick={() => setSidebarPinned((value) => !value)} title="Pin sidebar">
+          <Wand2 size={18} />
+          <span>{sidebarPinned ? "Auto hide off" : "Auto hide on"}</span>
+        </button>
         <button className="logout" onClick={() => setLoggedIn(false)} title="Logout">
           <LogOut size={18} />
           <span>Logout</span>
@@ -256,7 +285,7 @@ function App() {
         {view === "adjust" && (
           <Adjustment project={activeProject} templates={templates} updatePayload={updatePayload} saveProject={saveProject} onCreate={createProject} />
         )}
-        {view === "report" && <Report project={activeProject} />}
+        {view === "report" && <Report project={activeProject} onEdit={() => setView("adjust")} onPrint={() => printProject(activeProject)} />}
         {view === "rates" && <RateMaster project={activeProject} updatePayload={updatePayload} />}
         {view === "templates" && <Templates templates={templates} onCreate={createProject} updateTemplate={updateTemplate} deleteTemplate={deleteTemplate} />}
       </main>
@@ -290,6 +319,14 @@ function Login({ onLogin, error }) {
 
 function Dashboard({ activeProject, projects, templates, onCreate }) {
   const totals = activeProject ? calculate(activeProject.payload) : null;
+  const categories = useMemo(() => {
+    return templates.reduce((groups, template) => {
+      const key = template.work_type || "Other";
+      groups[key] = groups[key] || [];
+      groups[key].push(template);
+      return groups;
+    }, {});
+  }, [templates]);
   return (
     <section className="panel-grid">
       <Stat label="Projects" value={projects.length} />
@@ -299,7 +336,23 @@ function Dashboard({ activeProject, projects, templates, onCreate }) {
       <div className="wide-panel">
         <div className="section-title">
           <h2>Start New Estimate</h2>
-          <button onClick={() => onCreate(templates[0]?.id)}><Plus size={16} /> Bridge estimate</button>
+          <button onClick={() => onCreate(templates[0]?.id)}><Plus size={16} /> Use first template</button>
+        </div>
+        <div className="category-grid">
+          {Object.entries(categories).map(([category, rows], index) => (
+            <motion.article
+              className="category-card"
+              key={category}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.04 }}
+            >
+              <span>{rows.length} templates</span>
+              <strong>{category}</strong>
+              <p>{rows[0]?.description}</p>
+              <button onClick={() => onCreate(rows[0]?.id)}><Plus size={15} /> Create {category}</button>
+            </motion.article>
+          ))}
         </div>
         <div className="template-strip">
           {templates.map((template) => (
@@ -328,7 +381,7 @@ function Projects({ projects, activeProject, openProject, onCreate, printProject
     <section className="surface">
       <div className="section-title">
         <h2>Projects</h2>
-        <button onClick={() => onCreate()}><Plus size={16} /> New empty</button>
+        <button onClick={() => onCreate()}><Plus size={16} /> New from template</button>
       </div>
       <div className="project-list">
         {projects.map((project) => {
@@ -435,9 +488,31 @@ function Adjustment({ project, updatePayload, saveProject, onCreate, templates }
 
 function RateMaster({ project, updatePayload }) {
   if (!project) return <div className="surface"><h2>Rate Master</h2><p>Create or select a project first.</p></div>;
+  function addRateItem() {
+    updatePayload((draft) => {
+      const itemNo = (draft.items || []).length + 1;
+      draft.items.push({
+        itemNo,
+        description: "New rate master item",
+        rate: 0,
+        unit: "Cum",
+        quantity: 1,
+        cementRate: 0,
+        royaltyRate: 0,
+        machineryRate: 0,
+        labourRate: 0,
+        polRate: 0,
+        materialRate: 0,
+        analysis: [],
+      });
+    });
+  }
   return (
     <section className="surface">
-      <h2>Rate Master</h2>
+      <div className="section-title">
+        <h2>Rate Master</h2>
+        <button onClick={addRateItem}><Plus size={16} /> Add item</button>
+      </div>
       <div className="rate-table">
         <div className="rate-head">
           <span>Item name</span><span>Rate</span><span>Cement</span><span>Royalty</span><span>Machinery</span><span>Labour</span><span>POL</span>
@@ -549,7 +624,7 @@ function EmptyState({ templates, onCreate }) {
   return (
     <section className="surface empty">
       <h2>No project selected</h2>
-      <p>Create a bridge estimate from the default template or start with an empty project.</p>
+      <p>Create an estimate from a ready template. Empty projects are not saved.</p>
       <div className="template-strip">
         {templates.map((template) => <button key={template.id} onClick={() => onCreate(template.id)}>{template.name}</button>)}
       </div>
@@ -557,12 +632,12 @@ function EmptyState({ templates, onCreate }) {
   );
 }
 
-function Report({ project }) {
+function Report({ project, onEdit, onPrint }) {
   if (!project) return <EmptyReport />;
   const payload = project.payload;
   const totals = calculate(payload);
-  const abstractPages = chunk(totals.computedItems, 5);
-  const ratePages = chunk(totals.computedItems, 2);
+  const abstractPages = chunk(totals.computedItems, 14);
+  const ratePages = chunk(totals.computedItems, 3);
   let pageNo = 1;
   const sections = [
     ["Cover", 1],
@@ -576,6 +651,10 @@ function Report({ project }) {
   ];
   return (
     <section className="report-stack">
+      <div className="report-toolbar">
+        <button onClick={onEdit}><Settings2 size={16} /> Edit project values</button>
+        <button onClick={onPrint}><Printer size={16} /> Print current report</button>
+      </div>
       <ReportPage pageNo={pageNo++} className="cover-page">
         <div className="cover-k">
           <span>K1 {payload.adjustments.labourComponentPercent}</span>
@@ -736,7 +815,8 @@ function ReportHeader({ payload, accent = "Estimate" }) {
   return (
     <header className="report-header">
       <span>{accent}</span>
-      <strong>{payload.meta.title} {payload.meta.subtitle}</strong>
+      <strong>{payload.meta.title}</strong>
+      {payload.meta.subtitle && <small>{payload.meta.subtitle}</small>}
     </header>
   );
 }

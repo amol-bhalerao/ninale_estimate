@@ -131,6 +131,30 @@ function seedTemplates(PDO $pdo): void
             'description' => 'Building estimate with excavation, PCC, RCC frame, masonry, plaster, flooring, waterproofing, painting and services.',
             'payload' => workTemplate('Building', 'Construction of Administrative Building', 'Ground plus one RCC framed building', 7600000, ['Foundation excavation', 'PCC bed concrete', 'RCC columns and beams', 'Brick masonry', 'Internal plaster', 'Vitrified flooring', 'Electrical conduits']),
         ],
+        [
+            'name' => 'RCC Box Culvert Template',
+            'work_type' => 'Culvert',
+            'description' => 'Box culvert estimate with diversion, excavation, PCC, RCC barrel, wing walls, apron, pitching and approach reinstatement.',
+            'payload' => workTemplate('Culvert', 'Construction of RCC Box Culvert', 'Single cell culvert with wing walls and approach restoration', 4300000, ['Traffic diversion', 'Foundation excavation', 'PCC levelling course', 'RCC barrel slab', 'RCC wing walls', 'Apron concrete', 'Stone pitching', 'Approach road restoration']),
+        ],
+        [
+            'name' => 'Retaining Wall Protection Template',
+            'work_type' => 'Retaining Wall',
+            'description' => 'Protection estimate with excavation, PCC, RCC retaining wall, weep holes, filter media, backfilling and drainage.',
+            'payload' => workTemplate('Retaining Wall', 'Construction of RCC Retaining Wall', 'Hill road protection and drainage works', 6100000, ['Excavation in foundation', 'PCC M10 bedding', 'RCC stem and footing', 'Weep holes', 'Filter media', 'Granular backfill', 'Catch water drain']),
+        ],
+        [
+            'name' => 'Irrigation Canal Lining Template',
+            'work_type' => 'Canal',
+            'description' => 'Canal estimate with excavation dressing, bed lining, side lining, joints, curing, transitions and inspection path.',
+            'payload' => workTemplate('Canal', 'Canal Bed and Side Lining Work', 'Mechanised lining and canal improvement estimate', 8400000, ['Canal section dressing', 'Bed concrete lining', 'Side concrete lining', 'Construction joints', 'Expansion joints', 'Curing compound', 'Inspection path murum']),
+        ],
+        [
+            'name' => 'Water Tank ESR Template',
+            'work_type' => 'Water Supply',
+            'description' => 'Elevated service reservoir estimate with foundation, staging, container, inlet outlet, staircase, waterproofing and painting.',
+            'payload' => workTemplate('Water Supply', 'Construction of Elevated Service Reservoir', 'RCC ESR with staging and appurtenant works', 9900000, ['Pile/open foundation', 'RCC staging columns', 'RCC container wall', 'Dome slab', 'Inlet outlet pipe work', 'MS staircase', 'Waterproofing', 'External painting']),
+        ],
     ];
 
     $select = $pdo->prepare('SELECT id FROM templates WHERE name = ? LIMIT 1');
@@ -471,6 +495,9 @@ try {
             $template = $templateRow ? json_decode($templateRow['payload'], true) : null;
         }
         $payload = projectPayload($body, $template);
+        if (empty($payload['items']) || !is_array($payload['items'])) {
+            respond(['error' => 'Select a template or add estimate items before saving the project.'], 422);
+        }
         if (!empty($body['name'])) {
             $payload['meta']['title'] = $body['name'];
         }
@@ -488,6 +515,9 @@ try {
         $id = (int) $match[1];
         $body = input();
         $payload = projectPayload($body);
+        if (empty($payload['items']) || !is_array($payload['items'])) {
+            respond(['error' => 'Add at least one estimate item before saving the project.'], 422);
+        }
         $stmt = $pdo->prepare('UPDATE projects SET name = ?, work_type = ?, payload = ? WHERE id = ?');
         $stmt->execute([
             $body['name'] ?? $payload['meta']['title'] ?? 'Untitled Project',
