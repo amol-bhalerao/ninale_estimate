@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: Content-Type');
-header('Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -424,6 +424,30 @@ try {
             $row['payload'] = json_decode($row['payload'], true);
         }
         respond($rows);
+    }
+
+    if (preg_match('#^templates/(\d+)$#', $path, $match) && $method === 'PUT') {
+        $id = (int) $match[1];
+        $body = input();
+        $payload = $body['payload'] ?? emptyTemplate($body['work_type'] ?? 'Bridge');
+        if (!is_array($payload)) {
+            $payload = emptyTemplate('Bridge');
+        }
+        $stmt = $pdo->prepare('UPDATE templates SET name = ?, work_type = ?, description = ?, payload = ? WHERE id = ?');
+        $stmt->execute([
+            $body['name'] ?? $payload['meta']['title'] ?? 'Untitled Template',
+            $body['work_type'] ?? $payload['meta']['workType'] ?? 'Bridge',
+            $body['description'] ?? '',
+            json_encode($payload),
+            $id,
+        ]);
+        respond(['id' => $id, 'payload' => $payload]);
+    }
+
+    if (preg_match('#^templates/(\d+)$#', $path, $match) && $method === 'DELETE') {
+        $stmt = $pdo->prepare('DELETE FROM templates WHERE id = ?');
+        $stmt->execute([(int) $match[1]]);
+        respond(['ok' => true]);
     }
 
     if ($path === 'projects' && $method === 'GET') {

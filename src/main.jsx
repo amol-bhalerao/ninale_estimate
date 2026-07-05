@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   LibraryBig,
   LogOut,
+  Menu,
   Plus,
   Printer,
   Save,
@@ -41,6 +42,12 @@ const api = {
   },
   updateProject(id, body) {
     return this.request(`projects/${id}`, { method: "PUT", body: JSON.stringify(body) });
+  },
+  updateTemplate(id, body) {
+    return this.request(`templates/${id}`, { method: "PUT", body: JSON.stringify(body) });
+  },
+  deleteTemplate(id) {
+    return this.request(`templates/${id}`, { method: "DELETE" });
   },
 };
 
@@ -95,6 +102,7 @@ function App() {
   const [activeProject, setActiveProject] = useState(null);
   const [status, setStatus] = useState("Loading workspace...");
   const [error, setError] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -168,6 +176,19 @@ function App() {
     window.setTimeout(() => window.print(), 250);
   }
 
+  async function updateTemplate(id, body) {
+    const updated = await api.updateTemplate(id, body);
+    setTemplates((rows) => rows.map((row) => (row.id === id ? { ...row, ...body, payload: body.payload || row.payload } : row)));
+    setStatus("Template saved");
+    return updated;
+  }
+
+  async function deleteTemplate(id) {
+    await api.deleteTemplate(id);
+    setTemplates((rows) => rows.filter((row) => row.id !== id));
+    setStatus("Template deleted");
+  }
+
   function updatePayload(updater) {
     setActiveProject((project) => {
       if (!project) return project;
@@ -183,7 +204,7 @@ function App() {
   }
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${sidebarOpen ? "sidebar-expanded" : "sidebar-collapsed"}`}>
       <aside className="sidebar">
         <div className="brand">
           <Calculator size={24} />
@@ -196,7 +217,7 @@ function App() {
           {nav.map((item) => {
             const Icon = item.icon;
             return (
-              <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => setView(item.id)} title={item.label}>
+              <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => { setView(item.id); setSidebarOpen(false); }} title={item.label}>
                 <Icon size={18} />
                 <span>{item.label}</span>
               </button>
@@ -210,6 +231,9 @@ function App() {
       </aside>
       <main className="workspace">
         <header className="topbar">
+          <button className="icon-button mobile-menu" onClick={() => setSidebarOpen((open) => !open)} title="Toggle menu">
+            <Menu size={19} />
+          </button>
           <div>
             <h1>{activeProject?.payload?.meta?.title || "Estimate Workspace"}</h1>
             <p>{activeProject?.payload?.meta?.subtitle || status}</p>
@@ -225,14 +249,14 @@ function App() {
         </header>
 
         {error && <div className="alert">{error}</div>}
-        {view === "dashboard" && <Dashboard activeProject={activeProject} projects={projects} templates={templates} onCreate={createProject} openProject={openProject} />}
+        {view === "dashboard" && <Dashboard activeProject={activeProject} projects={projects} templates={templates} onCreate={createProject} />}
         {view === "projects" && <Projects projects={projects} activeProject={activeProject} openProject={openProject} onCreate={createProject} printProject={printProject} />}
         {view === "adjust" && (
           <Adjustment project={activeProject} templates={templates} updatePayload={updatePayload} saveProject={saveProject} onCreate={createProject} />
         )}
         {view === "report" && <Report project={activeProject} />}
         {view === "rates" && <RateMaster project={activeProject} updatePayload={updatePayload} />}
-        {view === "templates" && <Templates templates={templates} onCreate={createProject} />}
+        {view === "templates" && <Templates templates={templates} onCreate={createProject} updateTemplate={updateTemplate} deleteTemplate={deleteTemplate} />}
       </main>
     </div>
   );
@@ -262,7 +286,7 @@ function Login({ onLogin, error }) {
   );
 }
 
-function Dashboard({ activeProject, projects, templates, onCreate, openProject }) {
+function Dashboard({ activeProject, projects, templates, onCreate }) {
   const totals = activeProject ? calculate(activeProject.payload) : null;
   return (
     <section className="panel-grid">
@@ -284,18 +308,6 @@ function Dashboard({ activeProject, projects, templates, onCreate, openProject }
           ))}
         </div>
       </div>
-      {activeProject && (
-        <div className="wide-panel">
-          <div className="section-title">
-            <h2>Active Project Preview</h2>
-            <div className="inline-actions">
-              <button onClick={() => openProject(activeProject, "adjust")}><Settings2 size={16} /> Edit</button>
-              <button onClick={() => openProject(activeProject, "report")}><FileText size={16} /> Report</button>
-            </div>
-          </div>
-          <MiniReport project={activeProject} />
-        </div>
-      )}
     </section>
   );
 }
@@ -385,8 +397,7 @@ function Adjustment({ project, updatePayload, saveProject, onCreate, templates }
   }
 
   return (
-    <section className="adjust-layout">
-      <div className="editor">
+    <section className="editor">
         <div className="surface">
           <div className="section-title">
             <h2>Project Inputs</h2>
@@ -411,34 +422,11 @@ function Adjustment({ project, updatePayload, saveProject, onCreate, templates }
 
         <div className="surface">
           <div className="section-title">
-            <h2>Item Adjustment Window</h2>
+            <h2>Editable Estimate Table</h2>
             <button onClick={addItem}><Plus size={16} /> Item</button>
           </div>
-          <div className="items-editor">
-            {payload.items.map((item, index) => (
-              <details key={index} open={index < 3}>
-                <summary>
-                  <span>Item {item.itemNo}</span>
-                  <b>Rs. {currency(Number(item.rate) * Number(item.quantity))}</b>
-                </summary>
-                <TextField label="Description" value={item.description} onChange={(v) => updateItem(index, "description", v)} textarea />
-                <div className="number-grid compact">
-                  {["rate", "quantity", "unit", "cementRate", "royaltyRate", "machineryRate", "labourRate", "polRate"].map((field) =>
-                    field === "unit" ? (
-                      <TextField key={field} label="Unit" value={item.unit} onChange={(v) => updateItem(index, field, v)} />
-                    ) : (
-                      <NumberField key={field} label={labelize(field)} value={item[field]} onChange={(v) => updateItem(index, field, v)} />
-                    ),
-                  )}
-                </div>
-              </details>
-            ))}
-          </div>
+          <EditableEstimateTable items={totals.computedItems} updateItem={updateItem} />
         </div>
-      </div>
-      <aside className="live-report">
-        <MiniReport project={project} totals={totals} />
-      </aside>
     </section>
   );
 }
@@ -450,11 +438,14 @@ function RateMaster({ project, updatePayload }) {
       <h2>Rate Master</h2>
       <div className="rate-table">
         <div className="rate-head">
-          <span>Item</span><span>Rate</span><span>Cement</span><span>Royalty</span><span>Machinery</span><span>Labour</span><span>POL</span>
+          <span>Item name</span><span>Rate</span><span>Cement</span><span>Royalty</span><span>Machinery</span><span>Labour</span><span>POL</span>
         </div>
         {project.payload.items.map((item, index) => (
           <div className="rate-row" key={index}>
-            <span>{item.itemNo}. {item.description}</span>
+            <input
+              value={item.description}
+              onChange={(event) => updatePayload((draft) => { draft.items[index].description = event.target.value; })}
+            />
             {["rate", "cementRate", "royaltyRate", "machineryRate", "labourRate", "polRate"].map((field) => (
               <input
                 key={field}
@@ -470,14 +461,41 @@ function RateMaster({ project, updatePayload }) {
   );
 }
 
-function Templates({ templates, onCreate }) {
+function Templates({ templates, onCreate, updateTemplate, deleteTemplate }) {
   const [selectedTemplateId, setSelectedTemplateId] = useState(templates[0]?.id || "");
+  const [draft, setDraft] = useState(null);
   useEffect(() => {
     if (!selectedTemplateId && templates[0]?.id) {
       setSelectedTemplateId(templates[0].id);
     }
   }, [selectedTemplateId, templates]);
   const selected = templates.find((template) => String(template.id) === String(selectedTemplateId)) || templates[0];
+  useEffect(() => {
+    if (selected) {
+      setDraft(clone(selected));
+    }
+  }, [selected?.id]);
+  function updateDraft(field, value) {
+    setDraft((current) => ({ ...current, [field]: value }));
+  }
+  function updateDraftMeta(field, value) {
+    setDraft((current) => {
+      const next = clone(current);
+      next.payload.meta[field] = value;
+      return next;
+    });
+  }
+  function saveDraft() {
+    if (draft) {
+      updateTemplate(draft.id, draft);
+    }
+  }
+  function removeDraft() {
+    if (draft && window.confirm(`Delete template "${draft.name}"?`)) {
+      deleteTemplate(draft.id);
+      setSelectedTemplateId("");
+    }
+  }
   return (
     <section className="surface">
       <div className="section-title">
@@ -494,6 +512,21 @@ function Templates({ templates, onCreate }) {
           <strong>{selected.name}</strong>
           <span>{selected.work_type} / {selected.payload.items?.length || 0} default items</span>
           <p>{selected.description}</p>
+        </div>
+      )}
+      {draft && (
+        <div className="template-edit">
+          <h2>Edit Template</h2>
+          <div className="form-grid">
+            <TextField label="Template name" value={draft.name} onChange={(v) => updateDraft("name", v)} />
+            <TextField label="Work type" value={draft.work_type} onChange={(v) => updateDraft("work_type", v)} />
+            <TextField label="Description" value={draft.description} onChange={(v) => updateDraft("description", v)} textarea />
+            <TextField label="Default report title" value={draft.payload.meta.title} onChange={(v) => updateDraftMeta("title", v)} />
+          </div>
+          <div className="inline-actions">
+            <button onClick={saveDraft}><Save size={16} /> Save template</button>
+            <button className="danger-button" onClick={removeDraft}>Delete template</button>
+          </div>
         </div>
       )}
       <div className="template-grid">
@@ -526,7 +559,7 @@ function Report({ project }) {
   if (!project) return <EmptyReport />;
   const payload = project.payload;
   const totals = calculate(payload);
-  const abstractPages = chunk(totals.computedItems, 8);
+  const abstractPages = chunk(totals.computedItems, 5);
   const ratePages = chunk(totals.computedItems, 2);
   let pageNo = 1;
   const sections = [
@@ -628,6 +661,61 @@ function MiniReport({ project, totals = calculate(project.payload) }) {
   );
 }
 
+function EditableEstimateTable({ items, updateItem }) {
+  const numericFields = ["rate", "quantity", "cementRate", "royaltyRate", "machineryRate", "labourRate", "polRate"];
+  return (
+    <div className="editable-table-wrap">
+      <table className="editable-estimate">
+        <colgroup>
+          <col className="col-no" />
+          <col className="col-item" />
+          <col className="col-rate" />
+          <col className="col-unit" />
+          <col className="col-qty" />
+          <col className="col-money" />
+          <col className="col-money" />
+          <col className="col-money" />
+          <col className="col-money" />
+          <col className="col-money" />
+          <col className="col-money" />
+          <col className="col-money" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th>No</th><th>Item name</th><th>Rate</th><th>Unit</th><th>Qty</th><th>Amount</th><th>Cement</th><th>Royalty</th><th>Machine</th><th>Labour</th><th>POL</th><th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((item, index) => (
+            <tr key={item.itemNo}>
+              <td>{item.itemNo}</td>
+              <td>
+                <textarea value={item.description} title={item.description} onChange={(event) => updateItem(index, "description", event.target.value)} />
+              </td>
+              <td>
+                <input type="number" step="0.01" value={item.rate ?? 0} onChange={(event) => updateItem(index, "rate", event.target.value)} />
+              </td>
+              <td>
+                <input value={item.unit || ""} onChange={(event) => updateItem(index, "unit", event.target.value)} />
+              </td>
+              <td>
+                <input type="number" step="0.01" value={item.quantity ?? 0} onChange={(event) => updateItem(index, "quantity", event.target.value)} />
+              </td>
+              <td className="readonly-cell">{currency(item.amount)}</td>
+              {numericFields.slice(2).map((field) => (
+                <td key={field}>
+                  <input type="number" step="0.01" value={item[field] ?? 0} onChange={(event) => updateItem(index, field, event.target.value)} />
+                </td>
+              ))}
+              <td className="readonly-cell">{currency(item.amount)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function EmptyReport() {
   return <section className="surface empty"><h2>Report</h2><p>Select or create a project to view report pages.</p></section>;
 }
@@ -684,6 +772,20 @@ function AbstractTable({ items, compact = false, fit = false }) {
   return (
     <div className={fit ? "table-fit" : "table-scroll"}>
       <table className={compact ? "abstract compact-table" : "abstract"}>
+        <colgroup>
+          <col className="col-no" />
+          <col className="col-item" />
+          <col className="col-rate" />
+          <col className="col-unit" />
+          <col className="col-qty" />
+          <col className="col-money" />
+          <col className="col-money" />
+          <col className="col-money" />
+          <col className="col-money" />
+          <col className="col-money" />
+          <col className="col-money" />
+          <col className="col-money" />
+        </colgroup>
         <thead>
           <tr>
             <th>No</th><th>Item</th><th>Rate</th><th>Unit</th><th>Qty</th><th>Amount</th><th>Cement</th><th>Royalty</th><th>Machine</th><th>Labour</th><th>POL</th><th>Total</th>
