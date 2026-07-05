@@ -18,7 +18,9 @@ import "./styles.css";
 
 const api = {
   async request(path, options = {}) {
-    const response = await fetch(`/api/${path}`, {
+    const local = ["127.0.0.1", "localhost"].includes(window.location.hostname);
+    const url = local ? `/api/${path}` : `/backend.php?r=${encodeURIComponent(path)}`;
+    const response = await fetch(url, {
       ...options,
       headers: { "Content-Type": "application/json", ...(options.headers || {}) },
     });

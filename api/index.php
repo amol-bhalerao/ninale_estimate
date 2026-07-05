@@ -410,8 +410,11 @@ function projectPayload(array $body, ?array $base = null): array
 
 try {
     $pdo = pdo();
-    $path = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/', '/');
-    $path = preg_replace('#^api/?#', '', $path);
+    $path = trim((string) ($_GET['r'] ?? ''), '/');
+    if ($path === '') {
+        $path = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/', '/');
+        $path = preg_replace('#^(api|backend\.php)/?#', '', $path);
+    }
     $method = $_SERVER['REQUEST_METHOD'];
 
     if ($path === 'login' && $method === 'POST') {
