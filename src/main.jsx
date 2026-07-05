@@ -93,8 +93,29 @@ function calculate(payload) {
       0,
       amount - cementCost - royaltyCost - machineryCost - labourAmount - polAmount,
     );
+    const materialRate = Math.max(
+      0,
+      Number(item.rate || 0)
+        - Number(item.cementRate || 0)
+        - Number(item.royaltyRate || 0)
+        - Number(item.machineryRate || 0)
+        - Number(item.labourRate || 0)
+        - Number(item.polRate || 0),
+    );
     const excludingCementSteel = Math.max(0, amount - cementCost);
-    return { ...item, amount, cementCost, royaltyCost, machineryCost, labourAmount, polAmount, materialAmount, excludingCementSteel };
+    return {
+      ...item,
+      materialRate,
+      analysis: normalizeAnalysis(item, materialRate),
+      amount,
+      cementCost,
+      royaltyCost,
+      machineryCost,
+      labourAmount,
+      polAmount,
+      materialAmount,
+      excludingCementSteel,
+    };
   });
   const tenderAmount = computedItems.reduce((sum, item) => sum + item.amount, 0);
   const royalty = computedItems.reduce((sum, item) => sum + item.royaltyCost, 0);
@@ -103,6 +124,40 @@ function calculate(payload) {
   const gst = tenderAmount * (Number(adjustments.gstPercent || 0) / 100);
   const costExcluding = Math.max(0, tenderAmount - royalty - cement - steel - gst);
   return { computedItems, tenderAmount, royalty, cement, steel, gst, costExcluding };
+}
+
+function normalizeAnalysis(item, materialRate = 0) {
+  if (Array.isArray(item.analysis) && item.analysis.length) {
+    return item.analysis;
+  }
+  const rate = Number(item.rate || 0);
+  return [
+    { particular: "Basic item rate as entered in estimate table", amount: roundMoney(rate * 0.86) },
+    { particular: "Lead, lift, loading, unloading and handling", amount: roundMoney(rate * 0.09) },
+    { particular: "Labour welfare, finishing and incidental charges", amount: roundMoney(rate * 0.01) },
+    { particular: "Rounded rate adopted for rate analysis", amount: roundMoney(rate || materialRate) },
+  ];
+}
+
+function roundMoney(value) {
+  return Math.round(Number(value || 0) * 100) / 100;
+}
+
+function createBlankItem(itemNo) {
+  return {
+    itemNo,
+    description: "New estimate item",
+    rate: 0,
+    unit: "Cum",
+    quantity: 1,
+    cementRate: 0,
+    royaltyRate: 0,
+    machineryRate: 0,
+    labourRate: 0,
+    polRate: 0,
+    materialRate: 0,
+    analysis: normalizeAnalysis({ rate: 0 }),
+  };
 }
 
 function App() {
@@ -411,6 +466,7 @@ function Dashboard({ activeProject, projects, templates, onCreate, openProject, 
             >
               <span>{rows.length} templates</span>
               <strong>{category}</strong>
+              <b>Rs. {currency(calculate(rows[0]?.payload || {}).tenderAmount)}</b>
               <p>{rows[0]?.description}</p>
               <button onClick={() => onCreate(rows[0]?.id)}><Plus size={15} /> Create {category}</button>
             </motion.article>
@@ -432,7 +488,7 @@ function CreateProjectMenu({ templates, onCreate }) {
           {templates.map((template) => (
             <button key={template.id} onClick={() => { onCreate(template.id); setOpen(false); }}>
               <strong>{template.name}</strong>
-              <span>{template.work_type}</span>
+              <span>{template.work_type} / Rs. {currency(calculate(template.payload).tenderAmount)}</span>
             </button>
           ))}
         </div>
@@ -515,20 +571,7 @@ function Adjustment({ project, updatePayload, saveProject, onCreate, templates }
   function addItem() {
     updatePayload((draft) => {
       const itemNo = (draft.items || []).length + 1;
-      draft.items.push({
-        itemNo,
-        description: "New estimate item",
-        rate: 0,
-        unit: "Cum",
-        quantity: 0,
-        cementRate: 0,
-        royaltyRate: 0,
-        machineryRate: 0,
-        labourRate: 0,
-        polRate: 0,
-        materialRate: 0,
-        analysis: [],
-      });
+      draft.items.push(createBlankItem(itemNo));
     });
   }
 
@@ -576,20 +619,7 @@ function RateMaster({ project, updatePayload }) {
   function addRateItem() {
     updatePayload((draft) => {
       const itemNo = (draft.items || []).length + 1;
-      draft.items.push({
-        itemNo,
-        description: "New rate master item",
-        rate: 0,
-        unit: "Cum",
-        quantity: 1,
-        cementRate: 0,
-        royaltyRate: 0,
-        machineryRate: 0,
-        labourRate: 0,
-        polRate: 0,
-        materialRate: 0,
-        analysis: [],
-      });
+      draft.items.push({ ...createBlankItem(itemNo), description: "New rate master item" });
     });
   }
   return (
@@ -696,6 +726,7 @@ function Templates({ templates, onCreate, updateTemplate, deleteTemplate }) {
           <article key={template.id}>
             <strong>{template.name}</strong>
             <span>{template.work_type} / {template.payload.items?.length || 0} items</span>
+            <b>Rs. {currency(calculate(template.payload).tenderAmount)}</b>
             <p>{template.description}</p>
             <button onClick={() => onCreate(template.id)}>Use template</button>
           </article>
@@ -808,7 +839,7 @@ function Report({ project, onEdit, onPrint }) {
         </ReportPage>
       ))}
 
-      <ReportPage pageNo={pageNo++}>
+      <ReportPage pageNo={pageNo++} landscape className="summary-page">
         <ReportHeader payload={payload} />
         <h2 className="decorated-heading">Estimate Summary</h2>
         <KeyCalcTable payload={payload} totals={totals} />

@@ -403,6 +403,12 @@ h2 {
   font-size: 1.12rem;
 }
 
+.category-card b,
+.template-grid b {
+  color: #0f766e;
+  font-size: 1.08rem;
+}
+
 .category-card > span {
   color: #0f766e;
   font-weight: 900;
@@ -662,7 +668,7 @@ details[open] summary {
 .report-page {
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(135deg, #1f3a35, #d8b35f, #7f4d70) border-box;
+    linear-gradient(135deg, #b7d9d3, #f2ddb0, #d8c9e2) border-box;
   border: 8px solid transparent;
   border-radius: 20px;
   box-shadow: 0 8px 26px rgba(30, 35, 32, 0.12);
@@ -686,17 +692,18 @@ details[open] summary {
 }
 
 .report-header {
-  background: linear-gradient(135deg, #0f172a, #0f766e);
-  border-bottom: 4px solid #f59e0b;
+  background: #f8fbff;
+  border: 1px solid #cddcec;
+  border-bottom: 3px solid #b7d9d3;
   border-radius: 12px;
-  color: #fff;
+  color: #142033;
   margin-bottom: 14px;
   padding: 10px 12px;
   text-align: center;
 }
 
 .report-header span {
-  color: #ffe5a0;
+  color: #0f766e;
   display: block;
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   font-size: 0.75rem;
@@ -713,7 +720,7 @@ details[open] summary {
 }
 
 .decorated-heading {
-  color: #0f766e;
+  color: #155e75;
   font-family: Inter, Roboto, ui-sans-serif, system-ui, sans-serif;
   font-style: normal;
   font-weight: 900;
@@ -786,8 +793,8 @@ details[open] summary {
 .simple-table th,
 .abstract th,
 .editable-estimate th {
-  background: linear-gradient(135deg, #0f172a, #0f766e);
-  color: #fff;
+  background: #eef7fb;
+  color: #183247;
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   font-size: 0.72rem;
   text-transform: uppercase;
@@ -817,13 +824,13 @@ details[open] summary {
 .simple-table tbody tr:nth-child(even) td,
 .abstract tbody tr:nth-child(even) td,
 .editable-estimate tbody tr:nth-child(even) td {
-  background: #fff7ed;
+  background: #fff;
 }
 
 .simple-table tbody tr:nth-child(odd) td,
 .abstract tbody tr:nth-child(odd) td,
 .editable-estimate tbody tr:nth-child(odd) td {
-  background: #f0fdfa;
+  background: #fbfdff;
 }
 
 .abstract th {
@@ -966,7 +973,7 @@ details[open] summary {
 }
 
 .page-watermark {
-  color: rgba(31, 58, 53, 0.07);
+  color: rgba(15, 94, 117, 0.045);
   font-family: Inter, Roboto, ui-sans-serif, system-ui, sans-serif;
   font-size: 4.8rem;
   font-weight: 900;
@@ -1107,7 +1114,7 @@ details[open] summary {
   }
 
   .report-page {
-    border: 5px solid transparent;
+    border: 4px solid #cddcec;
     border-radius: 0;
     box-shadow: none;
     break-after: page;
@@ -1123,6 +1130,14 @@ details[open] summary {
     height: calc(210mm - 10mm);
     page: landscape;
     width: calc(297mm - 10mm);
+  }
+
+  .summary-page .simple-table {
+    font-size: 0.56rem;
+  }
+
+  .summary-page .table-fit .abstract {
+    font-size: 0.46rem;
   }
 
   .table-scroll,
@@ -1153,6 +1168,22 @@ details[open] summary {
   .abstract th,
   .abstract td {
     padding: 2px 3px;
+  }
+
+  .simple-table th,
+  .abstract th,
+  .editable-estimate th {
+    background: #f5f9fc !important;
+    color: #1d3348 !important;
+  }
+
+  .simple-table tbody tr:nth-child(even) td,
+  .abstract tbody tr:nth-child(even) td,
+  .editable-estimate tbody tr:nth-child(even) td,
+  .simple-table tbody tr:nth-child(odd) td,
+  .abstract tbody tr:nth-child(odd) td,
+  .editable-estimate tbody tr:nth-child(odd) td {
+    background: #fff !important;
   }
 
   .decorated-heading {
