@@ -12,6 +12,10 @@
   box-sizing: border-box;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   background:
     radial-gradient(circle at 8% 8%, rgba(20, 184, 166, 0.18), transparent 30%),
@@ -127,7 +131,9 @@ button {
 .app-shell {
   display: grid;
   grid-template-columns: 74px minmax(0, 1fr);
+  max-width: 100vw;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .app-shell.sidebar-expanded {
@@ -276,6 +282,8 @@ button {
   border: 1px solid rgba(216, 226, 239, 0.94);
   border-radius: 18px;
   box-shadow: 0 18px 50px rgba(30, 41, 59, 0.08);
+  max-width: 100%;
+  min-width: 0;
   padding: 20px;
 }
 
@@ -574,7 +582,9 @@ details[open] summary {
 .rate-table {
   display: grid;
   gap: 7px;
-  overflow-x: hidden;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
 }
 
 .rate-head,
@@ -853,11 +863,14 @@ details[open] summary {
 }
 
 .table-scroll {
+  max-width: 100%;
   overflow-x: auto;
+  width: 100%;
 }
 
 .table-fit {
-  overflow: visible;
+  max-width: 100%;
+  overflow-x: auto;
   width: 100%;
 }
 
@@ -871,7 +884,9 @@ details[open] summary {
 }
 
 .editable-table-wrap {
-  overflow-x: hidden;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
   width: 100%;
 }
 
@@ -1000,6 +1015,7 @@ details[open] summary {
 @media (max-width: 860px) {
   .app-shell {
     grid-template-columns: 1fr;
+    overflow-x: clip;
   }
 
   .sidebar {
@@ -1024,6 +1040,72 @@ details[open] summary {
     grid-template-columns: 1fr;
   }
 
+  .workspace {
+    max-width: 100vw;
+    overflow-x: hidden;
+    padding: 14px 10px;
+  }
+
+  .topbar {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .topbar h1 {
+    font-size: 1.08rem;
+  }
+
+  .top-actions {
+    flex-shrink: 0;
+  }
+
+  .surface,
+  .wide-panel,
+  .stat {
+    border-radius: 14px;
+    padding: 14px;
+  }
+
+  .section-title {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .create-menu,
+  .create-menu > button {
+    width: 100%;
+  }
+
+  .create-popover {
+    left: 0;
+    min-width: 0;
+    right: 0;
+    width: 100%;
+  }
+
+  .dashboard-projects,
+  .template-strip,
+  .template-grid,
+  .category-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .project-card,
+  .row-card {
+    gap: 10px;
+  }
+
+  .row-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .row-actions button {
+    min-width: 0;
+    padding-inline: 8px;
+  }
+
   .panel-grid,
   .form-grid,
   .number-grid,
@@ -1033,19 +1115,71 @@ details[open] summary {
 
   .rate-head,
   .rate-row {
-    grid-template-columns: 1fr;
-    min-width: 0;
+    grid-template-columns: minmax(220px, 1.6fr) repeat(6, minmax(82px, 1fr));
+    min-width: 820px;
   }
 
   .editable-table-wrap,
-  .table-scroll {
-    overflow-x: auto;
+  .table-scroll,
+  .table-fit,
+  .rate-table {
     max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    width: 100%;
   }
 
   .editable-estimate,
   .abstract {
-    min-width: 980px;
+    min-width: 860px;
+  }
+
+  .editable-estimate .col-no,
+  .abstract .col-no { width: 42px; }
+  .editable-estimate .col-item,
+  .abstract .col-item { width: 230px; }
+  .editable-estimate .col-rate,
+  .abstract .col-rate { width: 76px; }
+  .editable-estimate .col-unit,
+  .abstract .col-unit { width: 66px; }
+  .editable-estimate .col-qty,
+  .abstract .col-qty { width: 72px; }
+  .editable-estimate .col-money,
+  .abstract .col-money { width: 72px; }
+
+  .editable-estimate th,
+  .editable-estimate td,
+  .abstract th,
+  .abstract td {
+    padding: 4px;
+  }
+
+  .editable-estimate input,
+  .editable-estimate select,
+  .editable-estimate textarea {
+    font-size: 0.76rem;
+    padding: 6px;
+  }
+
+  .editable-estimate textarea {
+    min-height: 46px;
+  }
+
+  .table-total-banner {
+    max-width: 100%;
+  }
+
+  .table-total-banner strong {
+    font-size: 1.18rem;
+  }
+
+  .money-cell,
+  .abstract td:nth-child(n+3) {
+    font-size: 0.66rem;
+  }
+
+  .simple-table {
+    min-width: 560px;
   }
 
   .editable-estimate th:nth-child(2),
@@ -1074,9 +1208,48 @@ details[open] summary {
 
   .report-page,
   .report-page.landscape {
+    border-width: 4px;
     min-height: auto;
     overflow: hidden;
+    padding: 12px;
+    width: calc(100vw - 30px);
+  }
+
+  .report-content {
+    overflow-x: hidden;
+  }
+
+  .report-toolbar {
+    position: static;
     width: 100%;
+  }
+
+  .report-header {
+    padding: 8px;
+  }
+
+  .decorated-heading {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .mobile-menu,
+  .icon-button {
+    height: 38px;
+    width: 38px;
+  }
+
+  .rate-head,
+  .rate-row {
+    grid-template-columns: minmax(180px, 1.4fr) repeat(6, minmax(76px, 1fr));
+    min-width: 700px;
+  }
+
+  .signatures {
+    gap: 10px;
+    grid-template-columns: 1fr;
+    margin-top: 42px;
   }
 }
 
@@ -1141,11 +1314,15 @@ details[open] summary {
   }
 
   .table-scroll,
+  .table-fit,
   .editable-table-wrap {
     overflow: visible !important;
   }
 
-  table {
+  .simple-table,
+  .abstract {
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
     break-inside: auto;
     page-break-inside: auto;
   }
@@ -1167,7 +1344,8 @@ details[open] summary {
   .simple-table td,
   .abstract th,
   .abstract td {
-    padding: 2px 3px;
+    border: 0.35pt solid #9fb0bf !important;
+    padding: 2.2px 3px;
   }
 
   .simple-table th,
