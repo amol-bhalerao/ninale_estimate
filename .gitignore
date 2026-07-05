@@ -4,4 +4,5 @@ tmp/
 .env
 api/config.php
 .ssh/
+deploy/
 *.log
