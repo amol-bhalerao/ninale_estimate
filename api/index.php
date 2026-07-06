@@ -138,6 +138,12 @@ function seedTemplates(PDO $pdo): void
             'payload' => workTemplate('Culvert', 'Construction of RCC Box Culvert', 'Single cell culvert with wing walls and approach restoration', 4300000, ['Traffic diversion', 'Foundation excavation', 'PCC levelling course', 'RCC barrel slab', 'RCC wing walls', 'Apron concrete', 'Stone pitching', 'Approach road restoration']),
         ],
         [
+            'name' => 'RCC Box Bridge Design Estimate - Tawarajkheda',
+            'work_type' => 'Bridge Design',
+            'description' => 'Design-estimate template with hydraulic data, linear waterway, gradient, cross-section, discharge and schematic drawing sheets inspired by the Tawarajkheda reference.',
+            'payload' => designBridgeTemplate(),
+        ],
+        [
             'name' => 'Retaining Wall Protection Template',
             'work_type' => 'Retaining Wall',
             'description' => 'Protection estimate with excavation, PCC, RCC retaining wall, weep holes, filter media, backfilling and drainage.',
@@ -227,6 +233,88 @@ function workTemplate(string $workType, string $title, string $subtitle, float $
         ],
         'items' => $items,
     ];
+}
+
+function designBridgeTemplate(): array
+{
+    $payload = workTemplate(
+        'Bridge Design',
+        'Improvement to SH-211 to Tawarajkheda Kond Padoli Borkhanda Road',
+        'RCC box cell bridge design estimate at Tawarajkheda, Taluka Dharashiv',
+        6800000,
+        ['Site clearance and traffic diversion', 'Excavation for RCC box foundation', 'PCC bedding below raft', 'RCC M25 raft slab and box barrel', 'RCC cutoff and toe wall', 'U/S and D/S apron concrete', 'Stone pitching and protection work', 'Approach road reinstatement']
+    );
+
+    $payload['meta'] = [
+        'workType' => 'Bridge Design',
+        'title' => 'RCC Box Cell Bridge at Tawarajkheda',
+        'subtitle' => 'Improvement to MDR-34, Km 3/00 to 21/00, Taluka Dharashiv',
+        'division' => 'Public Works Division, Dharashiv',
+        'subdivision' => 'Public Works Sub Division, Dharashiv',
+        'preparedBy' => 'Executive Engineer',
+    ];
+
+    $payload['design'] = [
+        'cover' => [
+            'department' => 'Government of Maharashtra',
+            'region' => 'Public Works Region, Chhatrapati Sambhajinagar',
+            'circle' => 'Public Works Circle, Dharashiv',
+            'division' => 'Public Works Division, Dharashiv',
+            'workName' => 'Improvement to SH-211 to Tawarajkheda Kond Padoli Borkhanda Road to SH-238 MDR-34',
+            'location' => 'At Tawarajkheda, Taluka Dharashiv, District Dharashiv',
+        ],
+        'data' => [
+            ['Catchment Area', '0.21 Sq.mile / 0.55 Sq.Km.'],
+            ['Location of Site Crossing', 'At proposed site of crossing'],
+            ['Bed Width', '6.00 m'],
+            ['Bank Width', '18.00 m'],
+            ['Angle of Skew', '0.00 degree'],
+            ['Hydraulic Gradient', '0.0172'],
+            ['Rugosity Coefficient', '0.025'],
+            ['HFL', '703.30 m'],
+            ['LBL', '702.00 m'],
+            ['Flood Discharge', '11.73 Cumecs'],
+        ],
+        'waterway' => [
+            ['Flood Depth', 'HFL - LBL = 703.30 - 702.00 = 1.30 m'],
+            ['Average Velocity', '3.87 m/sec'],
+            ['Linear Waterway', '11.73 / (3.87 x 1.30) = 2.333 m'],
+            ['Adopted Waterway', '3.00 m'],
+            ['Proposed Opening', '2 span of 2.00 m c/c RCC box cell bridge'],
+        ],
+        'gradient' => [
+            ['0', '707.590', '-', '-', '-'],
+            ['15', '707.120', '15.00', '0.470', '0.031'],
+            ['60', '706.970', '45.00', '0.150', '0.003'],
+            ['120', '706.522', '30.00', '0.307', '0.010'],
+            ['210', '704.552', '30.00', '0.498', '0.017'],
+            ['330', '702.690', '30.00', '0.897', '0.030'],
+            ['420', '701.370', '40.00', '0.440', '0.011'],
+        ],
+        'crossSection' => [
+            ['31', '703.470', '703.30', '0.00', 'Comp I'],
+            ['32', '702.880', '703.30', '0.42', 'Comp I'],
+            ['33', '702.750', '703.30', '0.55', 'Comp II'],
+            ['34', '702.180', '703.30', '1.12', 'Comp II'],
+            ['35', '702.000', '703.30', '1.30', 'Comp II'],
+            ['37', '702.420', '703.30', '0.88', 'Comp III'],
+            ['39', '702.892', '703.30', '0.41', 'Comp III'],
+        ],
+        'discharge' => [
+            ['Compartment I', '2.699', '3.883', '0.695'],
+            ['Compartment II', '20.911', '4.973', '4.20'],
+            ['Compartment III', '5.800', '2.750', '2.11'],
+            ['Total', '29.410', '3.869 avg.', '7.009'],
+        ],
+        'drawingNotes' => [
+            'RCC box cell bridge clear opening 2.0 m x 2.0 m.',
+            '300 mm thick RCC M25 raft slab with cutoff wall, toe wall, upstream and downstream apron.',
+            'RTL RL 704.65, HFL 703.30, soffit RL 704.00 as per reference drawing.',
+            'Schematic drawing is generated for report preview; use CAD drawing for final construction issue.',
+        ],
+    ];
+
+    return $payload;
 }
 
 function seedProjects(PDO $pdo): void

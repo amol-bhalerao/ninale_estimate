@@ -75,6 +75,14 @@ function currency(value) {
   return new Intl.NumberFormat("en-IN", { maximumFractionDigits: 2 }).format(Number(value || 0));
 }
 
+function numericInputValue(value) {
+  return value === "" ? "" : value ?? 0;
+}
+
+function parseNumericInput(value) {
+  return value === "" ? "" : Number(value);
+}
+
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
@@ -558,13 +566,13 @@ function Adjustment({ project, updatePayload, saveProject, onCreate, templates }
 
   function updateAdjustment(field, value) {
     updatePayload((draft) => {
-      draft.adjustments[field] = Number(value);
+      draft.adjustments[field] = value;
     });
   }
 
   function updateItem(index, field, value) {
     updatePayload((draft) => {
-      draft.items[index][field] = field === "description" || field === "unit" ? value : Number(value);
+      draft.items[index][field] = value;
     });
   }
 
@@ -639,11 +647,10 @@ function RateMaster({ project, updatePayload }) {
               onChange={(event) => updatePayload((draft) => { draft.items[index].description = event.target.value; })}
             />
             {["rate", "cementRate", "royaltyRate", "machineryRate", "labourRate", "polRate"].map((field) => (
-              <input
+              <NumericInput
                 key={field}
-                type="number"
                 value={item[field]}
-                onChange={(event) => updatePayload((draft) => { draft.items[index][field] = Number(event.target.value); })}
+                onChange={(value) => updatePayload((draft) => { draft.items[index][field] = value; })}
               />
             ))}
           </div>
@@ -754,18 +761,20 @@ function Report({ project, onEdit, onPrint }) {
   const totals = calculate(payload);
   const abstractPages = chunk(totals.computedItems, 8);
   const ratePages = chunk(totals.computedItems, 2);
+  const designPageCount = payload.design ? 5 : 0;
   let pageNo = 1;
   const sections = [
     ["Cover", 1],
     ["Auto Index", 2],
-    ["K1, K2, K3 Calculation", 3],
-    ["Abstract Estimate", 4],
-    ["Lead Statement", 4 + abstractPages.length],
-    ["Material Statement", 5 + abstractPages.length],
-    ["Escalation Component Statement", 6 + abstractPages.length],
-    ["Rate Analysis", 7 + abstractPages.length],
-    ["Estimate Summary", 7 + abstractPages.length + ratePages.length],
-    ["Machinery / POL Lead Charges", 8 + abstractPages.length + ratePages.length],
+    ...(payload.design ? [["Design Data & Hydraulic Calculations", 3]] : []),
+    ["K1, K2, K3 Calculation", 3 + designPageCount],
+    ["Abstract Estimate", 4 + designPageCount],
+    ["Lead Statement", 4 + designPageCount + abstractPages.length],
+    ["Material Statement", 5 + designPageCount + abstractPages.length],
+    ["Escalation Component Statement", 6 + designPageCount + abstractPages.length],
+    ["Rate Analysis", 7 + designPageCount + abstractPages.length],
+    ["Estimate Summary", 7 + designPageCount + abstractPages.length + ratePages.length],
+    ["Machinery / POL Lead Charges", 8 + designPageCount + abstractPages.length + ratePages.length],
   ];
   return (
     <section className="report-stack">
@@ -797,6 +806,9 @@ function Report({ project, onEdit, onPrint }) {
           </tbody>
         </table>
       </ReportPage>
+
+      {payload.design && <DesignReportPages payload={payload} startPageNo={pageNo} />}
+      {payload.design ? (() => { pageNo += designPageCount; return null; })() : null}
 
       <ReportPage pageNo={pageNo++}>
         <ReportHeader payload={payload} />
@@ -905,7 +917,7 @@ function EditableEstimateTable({ items, updateItem }) {
                 <textarea value={item.description} title={item.description} onChange={(event) => updateItem(index, "description", event.target.value)} />
               </td>
               <td>
-                <input type="number" step="0.01" value={item.rate ?? 0} onChange={(event) => updateItem(index, "rate", event.target.value)} />
+                <NumericInput value={item.rate} onChange={(value) => updateItem(index, "rate", value)} />
               </td>
               <td>
                 <select value={item.unit || "Cum"} onChange={(event) => updateItem(index, "unit", event.target.value)}>
@@ -913,12 +925,12 @@ function EditableEstimateTable({ items, updateItem }) {
                 </select>
               </td>
               <td>
-                <input type="number" step="0.01" value={item.quantity ?? 0} onChange={(event) => updateItem(index, "quantity", event.target.value)} />
+                <NumericInput value={item.quantity} onChange={(value) => updateItem(index, "quantity", value)} />
               </td>
               <td className="readonly-cell money-cell">{currency(item.amount)}</td>
               {numericFields.slice(2).map((field) => (
                 <td key={field}>
-                  <input type="number" step="0.01" value={item[field] ?? 0} onChange={(event) => updateItem(index, field, event.target.value)} />
+                  <NumericInput value={item[field]} onChange={(value) => updateItem(index, field, value)} />
                 </td>
               ))}
               <td className="readonly-cell money-cell">{currency(item.amount)}</td>
@@ -932,6 +944,102 @@ function EditableEstimateTable({ items, updateItem }) {
 
 function EmptyReport() {
   return <section className="surface empty"><h2>Report</h2><p>Select or create a project to view report pages.</p></section>;
+}
+
+function DesignReportPages({ payload, startPageNo }) {
+  const design = payload.design;
+  return (
+    <>
+      <ReportPage pageNo={startPageNo} className="design-page">
+        <ReportHeader payload={payload} accent="Design" />
+        <h2 className="decorated-heading">Design Data</h2>
+        <DesignCover design={design} />
+        <SimpleTable rows={design.data || []} />
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 1} className="design-page">
+        <ReportHeader payload={payload} accent="Hydraulic" />
+        <h2 className="decorated-heading">Linear Waterway Calculation</h2>
+        <SimpleTable rows={design.waterway || []} />
+        <h2 className="decorated-heading compact-heading">Hydraulic Gradient</h2>
+        <DesignTable headers={["CH", "Bed Level", "Length", "Diff.", "Gradient"]} rows={design.gradient || []} />
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 2} landscape className="design-page">
+        <ReportHeader payload={payload} accent="Cross Section" />
+        <h2 className="decorated-heading">Defined Cross Section & Site of Crossing</h2>
+        <DesignTable headers={["Chainage", "Ground Level", "HFL", "Depth", "Compartment"]} rows={design.crossSection || []} />
+        <h2 className="decorated-heading compact-heading">Discharge Check</h2>
+        <DesignTable headers={["Compartment", "Discharge", "Velocity", "Area"]} rows={design.discharge || []} />
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 3} landscape className="design-page">
+        <ReportHeader payload={payload} accent="Drawing" />
+        <h2 className="decorated-heading">Bridge Site Section - Generated Schematic</h2>
+        <BridgeSketch />
+        <ul className="design-notes">
+          {(design.drawingNotes || []).map((note) => <li key={note}>{note}</li>)}
+        </ul>
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 4} landscape className="design-page">
+        <ReportHeader payload={payload} accent="Drawing" />
+        <h2 className="decorated-heading">L-Section & Catchment Reference - Generated Schematic</h2>
+        <LongSectionSketch />
+        <DesignTable headers={["Reference", "Value"]} rows={[["Toposheet", "56/B-7"], ["Scale", "1:50,000"], ["Latitude", "18 deg 21 min 8.89 sec N"], ["Longitude", "76 deg 16 min 22.11 sec E"], ["Catchment Area", "0.55 Sq.Km."]]} />
+      </ReportPage>
+    </>
+  );
+}
+
+function DesignCover({ design }) {
+  return (
+    <div className="design-cover">
+      <strong>{design.cover?.department}</strong>
+      <span>{design.cover?.region}</span>
+      <span>{design.cover?.circle}</span>
+      <span>{design.cover?.division}</span>
+      <p>{design.cover?.workName}</p>
+      <small>{design.cover?.location}</small>
+    </div>
+  );
+}
+
+function DesignTable({ headers, rows = [] }) {
+  return (
+    <table className="simple-table design-table">
+      <thead><tr>{headers.map((header) => <th key={header}>{header}</th>)}</tr></thead>
+      <tbody>
+        {rows.map((row, index) => <tr key={index}>{row.map((cell, cellIndex) => <td key={cellIndex}>{cell}</td>)}</tr>)}
+      </tbody>
+    </table>
+  );
+}
+
+function BridgeSketch() {
+  return (
+    <div className="bridge-sketch">
+      <div className="terrain-line" />
+      <div className="hfl-line"><span>HFL 703.30</span></div>
+      <div className="road-line"><span>RTL RL 704.65</span></div>
+      <div className="box-cell left-cell">2.0 x 2.0 m</div>
+      <div className="box-cell right-cell">2.0 x 2.0 m</div>
+      <div className="raft">300 mm RCC M25 raft slab</div>
+      <div className="cutoff left-cutoff" />
+      <div className="cutoff right-cutoff" />
+      <div className="apron upstream">U/S apron</div>
+      <div className="apron downstream">D/S apron</div>
+    </div>
+  );
+}
+
+function LongSectionSketch() {
+  const points = ["707.59", "707.12", "706.97", "706.52", "705.14", "704.55", "703.59", "702.69", "701.81", "700.93"];
+  return (
+    <div className="long-section">
+      <div className="gradient-line" />
+      {points.map((point, index) => (
+        <span key={point} style={{ left: `${5 + index * 9.5}%`, top: `${18 + index * 5}%` }}>{point}</span>
+      ))}
+      <b>Gradient = 0.0155</b>
+    </div>
+  );
 }
 
 function ReportPage({ children, pageNo, landscape = false, className = "" }) {
@@ -1119,8 +1227,21 @@ function NumberField({ label, value, onChange }) {
   return (
     <label className="field">
       <span>{label}</span>
-      <input type="number" step="0.01" value={value ?? 0} onChange={(e) => onChange(e.target.value)} />
+      <NumericInput value={value} onChange={onChange} />
     </label>
+  );
+}
+
+function NumericInput({ value, onChange }) {
+  return (
+    <input
+      inputMode="decimal"
+      step="0.01"
+      type="number"
+      value={numericInputValue(value)}
+      onFocus={(event) => event.target.select()}
+      onChange={(event) => onChange(parseNumericInput(event.target.value))}
+    />
   );
 }
 

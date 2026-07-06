@@ -974,6 +974,169 @@ details[open] summary {
   text-align: center;
 }
 
+.design-cover {
+  border: 1px solid #cddcec;
+  display: grid;
+  gap: 7px;
+  margin-bottom: 14px;
+  padding: 14px;
+  text-align: center;
+}
+
+.design-cover strong {
+  color: #142033;
+  font-size: 1.05rem;
+  text-transform: uppercase;
+}
+
+.design-cover p {
+  font-weight: 800;
+  margin: 8px 0 0;
+}
+
+.compact-heading {
+  margin-top: 18px;
+}
+
+.design-table {
+  margin-bottom: 12px;
+}
+
+.design-notes {
+  border: 1px solid #cddcec;
+  margin: 12px 0 0;
+  padding: 12px 18px;
+}
+
+.design-notes li {
+  margin-bottom: 5px;
+}
+
+.bridge-sketch,
+.long-section {
+  background: linear-gradient(#fff, #fbfdff);
+  border: 1px solid #9fb0bf;
+  height: 430px;
+  margin: 10px 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.terrain-line,
+.hfl-line,
+.road-line,
+.gradient-line {
+  position: absolute;
+}
+
+.terrain-line {
+  border-top: 3px solid #687789;
+  left: 7%;
+  right: 7%;
+  top: 58%;
+  transform: rotate(-8deg);
+}
+
+.hfl-line {
+  border-top: 1.5px dashed #2563eb;
+  left: 8%;
+  right: 8%;
+  top: 45%;
+}
+
+.road-line {
+  border-top: 2px solid #142033;
+  left: 8%;
+  right: 8%;
+  top: 28%;
+}
+
+.hfl-line span,
+.road-line span {
+  background: #fff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding-right: 6px;
+  position: relative;
+  top: -12px;
+}
+
+.box-cell {
+  align-items: center;
+  border: 3px solid #142033;
+  display: flex;
+  font-weight: 800;
+  height: 110px;
+  justify-content: center;
+  position: absolute;
+  top: 43%;
+  width: 150px;
+}
+
+.left-cell { left: 34%; }
+.right-cell { left: 50%; }
+
+.raft {
+  border-top: 8px solid #142033;
+  font-size: 0.78rem;
+  font-weight: 800;
+  left: 28%;
+  padding-top: 8px;
+  position: absolute;
+  right: 24%;
+  text-align: center;
+  top: 70%;
+}
+
+.cutoff {
+  background: #142033;
+  height: 70px;
+  position: absolute;
+  top: 70%;
+  width: 10px;
+}
+
+.left-cutoff { left: 29%; }
+.right-cutoff { right: 25%; }
+
+.apron {
+  border-top: 4px solid #687789;
+  bottom: 62px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  position: absolute;
+  text-align: center;
+  width: 170px;
+}
+
+.upstream { left: 9%; }
+.downstream { right: 7%; }
+
+.long-section {
+  height: 360px;
+}
+
+.gradient-line {
+  border-top: 3px solid #142033;
+  left: 5%;
+  right: 5%;
+  top: 28%;
+  transform: rotate(20deg);
+  transform-origin: left center;
+}
+
+.long-section span {
+  font-family: "Roboto Mono", ui-monospace, monospace;
+  font-size: 0.7rem;
+  position: absolute;
+}
+
+.long-section b {
+  bottom: 22px;
+  left: 40%;
+  position: absolute;
+}
+
 .page-number {
   bottom: 18px;
   color: #1f3a35;
