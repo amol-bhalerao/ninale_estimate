@@ -879,8 +879,16 @@ details[open] summary {
   font-family: Inter, Roboto, ui-sans-serif, system-ui, sans-serif;
   font-size: 0.78rem;
   overflow: hidden;
-  table-layout: fixed;
   width: 100%;
+}
+
+.simple-table,
+.abstract {
+  table-layout: auto;
+}
+
+.editable-estimate {
+  table-layout: fixed;
 }
 
 .simple-table th,
@@ -1247,10 +1255,42 @@ details[open] summary {
 
 .design-table {
   margin-bottom: 12px;
+  table-layout: auto;
+  width: 100%;
+}
+
+.design-table th,
+.design-table td {
+  white-space: nowrap;
+  width: 1%;
+}
+
+.design-table th:nth-child(2),
+.design-table td:nth-child(2),
+.design-table th:last-child,
+.design-table td:last-child {
+  white-space: normal;
+  width: auto;
+}
+
+.gcm-page .design-table th,
+.gcm-page .design-table td {
+  padding-left: 4px;
+  padding-right: 4px;
 }
 
 .design-page .simple-table {
   font-size: 0.72rem;
+}
+
+.gcm-note {
+  border: 1px solid #c9d8e8;
+  border-radius: 8px;
+  color: #24435a;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  margin: 8px 0 0;
+  padding: 8px 10px;
 }
 
 .formula-grid {

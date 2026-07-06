@@ -871,6 +871,80 @@ function EmptyState({ templates, onCreate }) {
   );
 }
 
+const GCM_SECTION_TITLES = [
+  "Geographical Information & Lead Chart",
+  "Survey & Investigation",
+  "Fund Head Sheet",
+  "General Report",
+  "Certificate",
+  "Rainfall Data",
+  "Principal Features",
+  "Yield Calculation",
+  "Capacity Table",
+  "Bed Fall / Gradient",
+  "HFL Calculation at FTL",
+  "HFL Calculation at MWL",
+  "Afflux Calculation",
+  "Discharge Calculation",
+  "Hydraulic Jump & Apron",
+  "Design of Weir Body Wall",
+  "Stability Check",
+  "Wing & Abutment Wall",
+  "Benefit Cost Ratio Calculation",
+  "Water Requirement Statement",
+  "Annual Cost Calculation",
+  "Crop Pattern & Produce Statements",
+  "ERR Calculation",
+  "Statement No.2 - Irrigated Produce",
+  "Statement No.1 - Unirrigated Produce",
+  "Crop Water Schedule - Hybrid Jawar",
+  "Crop Water Schedule - Wheat",
+  "Crop Water Schedule - Gram",
+  "Crop Water Schedule - Sunflower",
+  "Crop Water Schedule - Vegetables",
+  "Crop Water Schedule - Two Seasonal Cotton",
+  "ERR Cost Analysis",
+  "Flow of Construction & O&M Costs",
+  "Flow of Construction & O&M Costs - Continuation",
+  "Irrigated Produce Statement",
+  "Pre/Post Project Crop Pattern",
+  "Flow of Annual Crop Net Returns",
+  "B.C. Ratio Discounting Rate",
+  "B.C. Ratio at 10 Percent",
+  "B.C. Ratio at 10 Percent - Continuation",
+  "B.C. Ratio at 11 Percent",
+  "B.C. Ratio at 11 Percent - Continuation",
+  "E.R.R. Calculation",
+  "General Abstract",
+  "Abstract of C Works",
+  "Abstract of C Works - Continuation I",
+  "Abstract of C Works - Continuation II",
+  "Royalty Statement",
+  "Utilisation Statement No.1",
+  "Measurement Sheet - Item 1",
+  "Measurement Sheet - Item 2",
+  "Measurement Sheet - Item 3",
+  "Measurement Sheet - Item 4",
+  "Measurement Sheet - Item 5",
+  "Measurement Sheet - Item 6",
+  "Measurement Sheet - Backfilling",
+  "Steel Quantity - Weir Body Wall",
+  "Steel Quantity - Flank Wall",
+  "Steel Quantity - D/S Wing Wall",
+  "Statement for Excavation",
+  "Nalla Deepening Statement",
+  "Section Level Statement",
+  "Lead Chart with Certificate",
+  "Rates Analysis Items 1 to 4",
+  "Rates Analysis Items 5 to 8",
+  "Rates Analysis Items 9 to 13",
+  "Royalty, GST and Labour Cess",
+  "Marathi Responsibility Form I",
+  "Marathi Responsibility Form II",
+  "Preliminary Site Visit Report I",
+  "Preliminary Site Visit Report II",
+];
+
 function Report({ project, onEdit, onPrint }) {
   if (!project) return <EmptyReport />;
   const payload = project.payload;
@@ -879,7 +953,7 @@ function Report({ project, onEdit, onPrint }) {
   const ratePages = chunk(totals.computedItems, 2);
   const workType = payload.meta?.workType || project.work_type || "";
   const reportKind = payload.gcmDesign ? "gcm" : payload.design ? "bridgeDesign" : payload.roadDesign ? "roadDesign" : workType === "Road" ? "road" : workType === "Bridge" ? "bridge" : "standard";
-  const prefixPageCount = reportKind === "gcm" ? 30 : reportKind === "bridgeDesign" ? 13 : reportKind === "roadDesign" ? 8 : reportKind === "road" ? 4 : reportKind === "bridge" ? 2 : 0;
+  const prefixPageCount = reportKind === "gcm" ? GCM_SECTION_TITLES.length : reportKind === "bridgeDesign" ? 13 : reportKind === "roadDesign" ? 8 : reportKind === "road" ? 4 : reportKind === "bridge" ? 2 : 0;
   let pageNo = 1;
   const sections = [
     ["Cover", 1],
@@ -899,38 +973,7 @@ function Report({ project, onEdit, onPrint }) {
       ["Define Cross Section Drawing", 14],
       ["L-section Drawing", 15],
     ] : []),
-    ...(reportKind === "gcm" ? [
-      ["Geographical Information & Lead Chart", 3],
-      ["Survey & Investigation", 4],
-      ["Fund Head Sheet", 5],
-      ["General Report", 6],
-      ["Certificate", 7],
-      ["Rainfall Data", 8],
-      ["Principal Features", 9],
-      ["Yield Calculation", 10],
-      ["Capacity Table", 11],
-      ["Bed Fall / Gradient", 12],
-      ["HFL Calculation at FTL", 13],
-      ["HFL Calculation at MWL", 14],
-      ["Afflux Calculation", 15],
-      ["Discharge Calculation", 16],
-      ["Hydraulic Jump & Apron", 17],
-      ["Design of Weir Body Wall", 18],
-      ["Stability Check", 19],
-      ["Wing & Abutment Wall", 20],
-      ["B.C. Ratio", 21],
-      ["Water Requirement", 22],
-      ["Annual Cost", 23],
-      ["Crop Pattern & Produce", 24],
-      ["ERR Calculation", 25],
-      ["GCM General Abstract", 26],
-      ["Measurement Statement", 27],
-      ["Nalla Deepening & Lead Chart", 28],
-      ["GCM Rate Analysis Summary", 29],
-      ["Drawing Index", 30],
-      ["Compliance Form I", 31],
-      ["Compliance Form II", 32],
-    ] : []),
+    ...(reportKind === "gcm" ? GCM_SECTION_TITLES.map((title, index) => [title, index + 3]) : []),
     ...(reportKind === "roadDesign" ? [
       ["Road Design Inputs", 3],
       ["Traffic Design", 4],
@@ -949,14 +992,16 @@ function Report({ project, onEdit, onPrint }) {
       ["Bridge Technical Statement", 3],
       ["Bridge Component Statement", 4],
     ] : []),
-    ["K1, K2, K3 Calculation", 3 + prefixPageCount],
-    ["Abstract Estimate", 4 + prefixPageCount],
-    ["Lead Statement", 4 + prefixPageCount + abstractPages.length],
-    ["Material Statement", 5 + prefixPageCount + abstractPages.length],
-    ["Escalation Component Statement", 6 + prefixPageCount + abstractPages.length],
-    ["Rate Analysis", 7 + prefixPageCount + abstractPages.length],
-    ["Estimate Summary", 7 + prefixPageCount + abstractPages.length + ratePages.length],
-    ["Machinery / POL Lead Charges", 8 + prefixPageCount + abstractPages.length + ratePages.length],
+    ...(reportKind === "gcm" ? [] : [
+      ["K1, K2, K3 Calculation", 3 + prefixPageCount],
+      ["Abstract Estimate", 4 + prefixPageCount],
+      ["Lead Statement", 4 + prefixPageCount + abstractPages.length],
+      ["Material Statement", 5 + prefixPageCount + abstractPages.length],
+      ["Escalation Component Statement", 6 + prefixPageCount + abstractPages.length],
+      ["Rate Analysis", 7 + prefixPageCount + abstractPages.length],
+      ["Estimate Summary", 7 + prefixPageCount + abstractPages.length + ratePages.length],
+      ["Machinery / POL Lead Charges", 8 + prefixPageCount + abstractPages.length + ratePages.length],
+    ]),
   ];
   return (
     <section className="report-stack">
@@ -1000,59 +1045,63 @@ function Report({ project, onEdit, onPrint }) {
       {reportKind === "bridge" && <BridgeReportPages payload={payload} startPageNo={pageNo} />}
       {prefixPageCount ? (() => { pageNo += prefixPageCount; return null; })() : null}
 
-      <ReportPage pageNo={pageNo++}>
-        <ReportHeader payload={payload} />
-        <h2 className="decorated-heading">Calculations of K1, K2, K3 (For Price Escalation)</h2>
-        <KeyCalcTable payload={payload} totals={totals} />
-        <SignatureBlock payload={payload} />
-      </ReportPage>
+      {reportKind !== "gcm" && (
+        <>
+          <ReportPage pageNo={pageNo++}>
+            <ReportHeader payload={payload} />
+            <h2 className="decorated-heading">Calculations of K1, K2, K3 (For Price Escalation)</h2>
+            <KeyCalcTable payload={payload} totals={totals} />
+            <SignatureBlock payload={payload} />
+          </ReportPage>
 
-      {abstractPages.map((items, index) => (
-        <ReportPage pageNo={pageNo++} key={`abstract-${index}`} landscape>
-          <ReportHeader payload={payload} />
-          <h2 className="decorated-heading">Abstract Estimate</h2>
-          <AbstractTable items={items} fit />
-        </ReportPage>
-      ))}
+          {abstractPages.map((items, index) => (
+            <ReportPage pageNo={pageNo++} key={`abstract-${index}`} landscape>
+              <ReportHeader payload={payload} />
+              <h2 className="decorated-heading">Abstract Estimate</h2>
+              <AbstractTable items={items} fit />
+            </ReportPage>
+          ))}
 
-      <ReportPage pageNo={pageNo++}>
-        <ReportHeader payload={payload} />
-        <h2 className="decorated-heading">Lead Statement</h2>
-        <LeadStatement rows={payload.leadStatement} />
-      </ReportPage>
+          <ReportPage pageNo={pageNo++}>
+            <ReportHeader payload={payload} />
+            <h2 className="decorated-heading">Lead Statement</h2>
+            <LeadStatement rows={payload.leadStatement} />
+          </ReportPage>
 
-      <ReportPage pageNo={pageNo++}>
-        <ReportHeader payload={payload} accent="Statement" />
-        <h2 className="decorated-heading">Material Statement</h2>
-        <MaterialStatement items={totals.computedItems} />
-      </ReportPage>
+          <ReportPage pageNo={pageNo++}>
+            <ReportHeader payload={payload} accent="Statement" />
+            <h2 className="decorated-heading">Material Statement</h2>
+            <MaterialStatement items={totals.computedItems} />
+          </ReportPage>
 
-      <ReportPage pageNo={pageNo++}>
-        <ReportHeader payload={payload} accent="Components" />
-        <h2 className="decorated-heading">Escalation Component Statement</h2>
-        <ComponentStatement payload={payload} totals={totals} />
-      </ReportPage>
+          <ReportPage pageNo={pageNo++}>
+            <ReportHeader payload={payload} accent="Components" />
+            <h2 className="decorated-heading">Escalation Component Statement</h2>
+            <ComponentStatement payload={payload} totals={totals} />
+          </ReportPage>
 
-      {ratePages.map((items, index) => (
-        <ReportPage pageNo={pageNo++} key={`rate-${index}`}>
-          <ReportHeader payload={payload} />
-          <h2 className="decorated-heading">Rate Analysis</h2>
-          {items.map((item) => <RateAnalysis item={item} key={item.itemNo} />)}
-        </ReportPage>
-      ))}
+          {ratePages.map((items, index) => (
+            <ReportPage pageNo={pageNo++} key={`rate-${index}`}>
+              <ReportHeader payload={payload} />
+              <h2 className="decorated-heading">Rate Analysis</h2>
+              {items.map((item) => <RateAnalysis item={item} key={item.itemNo} />)}
+            </ReportPage>
+          ))}
 
-      <ReportPage pageNo={pageNo++} landscape className="summary-page">
-        <ReportHeader payload={payload} />
-        <h2 className="decorated-heading">Estimate Summary</h2>
-        <KeyCalcTable payload={payload} totals={totals} />
-        <AbstractTable items={totals.computedItems.slice(-6)} fit />
-        <SignatureBlock payload={payload} />
-      </ReportPage>
+          <ReportPage pageNo={pageNo++} landscape className="summary-page">
+            <ReportHeader payload={payload} />
+            <h2 className="decorated-heading">Estimate Summary</h2>
+            <KeyCalcTable payload={payload} totals={totals} />
+            <AbstractTable items={totals.computedItems.slice(-6)} fit />
+            <SignatureBlock payload={payload} />
+          </ReportPage>
 
-      <ReportPage pageNo={pageNo++} landscape>
-        <h2 className="decorated-heading">Machinery / POL Charges For Lead Charges Rs / Unit</h2>
-        <LeadChargeTable rows={payload.leadCharges} />
-      </ReportPage>
+          <ReportPage pageNo={pageNo++} landscape>
+            <h2 className="decorated-heading">Machinery / POL Charges For Lead Charges Rs / Unit</h2>
+            <LeadChargeTable rows={payload.leadCharges} />
+          </ReportPage>
+        </>
+      )}
     </section>
   );
 }
@@ -1273,6 +1322,150 @@ function roadQuantityBasisFallback() {
   ];
 }
 
+function gcmCropScheduleRows(crop, area = "12.00") {
+  const pattern = [
+    ["1st", "Oct I", "Land preparation and first watering", "0.12", "0.12"],
+    ["2nd", "Oct II", "Sowing / germination", "0.10", "0.22"],
+    ["3rd", "Nov I", "Vegetative growth", "0.16", "0.38"],
+    ["4th", "Nov II", "Crop development", "0.18", "0.56"],
+    ["5th", "Dec I", "Flowering / maturity", "0.20", "0.76"],
+    ["6th", "Dec II", "Final watering", "0.14", "0.90"],
+  ];
+  return pattern.map((row) => [crop, area, ...row]);
+}
+
+function gcmCashFlowRows(baseCost, years = 12, multiplier = 1) {
+  return Array.from({ length: years }, (_, index) => {
+    const year = index + 1;
+    const construction = year <= 2 ? baseCost * (year === 1 ? 0.6 : 0.4) : 0;
+    const om = year >= 3 ? baseCost * 0.015 : 0;
+    const benefit = year >= 3 ? baseCost * 0.075 * multiplier : 0;
+    const factor10 = 1 / Math.pow(1.1, year);
+    const factor11 = 1 / Math.pow(1.11, year);
+    return [
+      year,
+      currency(construction),
+      currency(om),
+      currency(benefit),
+      factor10.toFixed(3),
+      currency((benefit - om - construction) * factor10),
+      factor11.toFixed(3),
+      currency((benefit - om - construction) * factor11),
+    ];
+  });
+}
+
+function gcmMeasurementRows(items, start, count) {
+  return items.slice(start, start + count).map((item) => {
+    const length = Math.max(1, Number(item.quantity || 0) / 12).toFixed(2);
+    const width = item.unit?.toLowerCase().includes("sqm") ? "1.00" : "2.00";
+    const depth = item.unit?.toLowerCase().includes("sqm") ? "-" : "1.50";
+    return [
+      item.itemNo,
+      item.description,
+      "As per drawing",
+      length,
+      width,
+      depth,
+      Number(item.quantity || 0).toFixed(3),
+      item.unit,
+    ];
+  });
+}
+
+function gcmRateRows(items, start, count) {
+  return items.slice(start, start + count).map((item) => [
+    item.itemNo,
+    item.description,
+    item.unit,
+    currency(item.rate),
+    currency(item.cementRate || 0),
+    currency(item.royaltyRate || 0),
+    currency(item.labourRate || 0),
+    currency(item.machineryRate || 0),
+    currency((item.rate || 0) + (item.cementRate || 0) + (item.royaltyRate || 0) + (item.labourRate || 0) + (item.machineryRate || 0)),
+  ]);
+}
+
+function GcmStatementPages({ payload, gcm, totals, page }) {
+  const items = totals.computedItems || [];
+  const baseCost = totals.tenderAmount || 1000000;
+  const cropRows = gcm.cropPattern || [];
+  const cashRows = gcmCashFlowRows(baseCost);
+  const abstractRows = items.map((item) => [item.itemNo, item.description, item.unit, Number(item.quantity || 0).toFixed(3), currency(item.rate), currency(item.total)]);
+  const leadRows = (payload.leadStatement || []).map((row) => [row.material, row.source, row.distanceKm, row.unit, row.leadCharge, "Lead verified as per site certificate"]);
+  const producedRows = cropRows.filter((row) => row[0] !== "Total").map((row) => [
+    row[0],
+    row[1],
+    "12.00",
+    currency(Number(String(row[2]).replace(/[^0-9.]/g, "")) || 0),
+    currency((Number(String(row[2]).replace(/[^0-9.]/g, "")) || 0) * 12),
+  ]);
+  const continuationRows = [
+    ["Mathematical check", "100% arithmetical and formula check exercised in generated estimate"],
+    ["Reference drawing dependency", "CAD/GIS drawing image may be attached for construction issue drawing sheet"],
+    ["CSR basis", "Rates are editable in Rate Master and project report table"],
+    ["Final verification", "All values are recalculated from current project payload before print"],
+  ];
+
+  const pages = [
+    ["Statement No.2 - Irrigated Produce", <DesignTable headers={["Crop", "% Age", "Area Ha", "Net Benefit / Ha", "Total Benefit"]} rows={producedRows} />, { landscape: true, accent: "Statement 2" }],
+    ["Statement No.1 - Unirrigated Produce", <DesignTable headers={["Crop", "% Age", "Area Ha", "Existing Benefit / Ha", "Total Benefit"]} rows={producedRows.map((row) => [row[0], row[1], row[2], currency((Number(String(row[3]).replace(/[^0-9.]/g, "")) || 0) * 0.35), currency((Number(String(row[4]).replace(/[^0-9.]/g, "")) || 0) * 0.35)])} />, { landscape: true, accent: "Statement 1" }],
+    ["Crop Water Schedule - Hybrid Jawar", <DesignTable headers={["Crop", "Area Ha", "Turn", "Fortnight", "Operation", "Depth m", "Cumulative m"]} rows={gcmCropScheduleRows("Hybrid Jawar")} />, { landscape: true, accent: "Water" }],
+    ["Crop Water Schedule - Wheat", <DesignTable headers={["Crop", "Area Ha", "Turn", "Fortnight", "Operation", "Depth m", "Cumulative m"]} rows={gcmCropScheduleRows("Wheat", "9.60")} />, { landscape: true, accent: "Water" }],
+    ["Crop Water Schedule - Gram", <DesignTable headers={["Crop", "Area Ha", "Turn", "Fortnight", "Operation", "Depth m", "Cumulative m"]} rows={gcmCropScheduleRows("Gram", "4.80")} />, { landscape: true, accent: "Water" }],
+    ["Crop Water Schedule - Sunflower", <DesignTable headers={["Crop", "Area Ha", "Turn", "Fortnight", "Operation", "Depth m", "Cumulative m"]} rows={gcmCropScheduleRows("Sunflower", "3.60")} />, { landscape: true, accent: "Water" }],
+    ["Crop Water Schedule - Vegetables", <DesignTable headers={["Crop", "Area Ha", "Turn", "Fortnight", "Operation", "Depth m", "Cumulative m"]} rows={gcmCropScheduleRows("Vegetables", "2.40")} />, { landscape: true, accent: "Water" }],
+    ["Crop Water Schedule - Two Seasonal Cotton", <DesignTable headers={["Crop", "Area Ha", "Turn", "Fortnight", "Operation", "Depth m", "Cumulative m"]} rows={gcmCropScheduleRows("Two Seasonal Cotton", "6.00")} />, { landscape: true, accent: "Water" }],
+    ["ERR Cost Analysis", <DesignTable headers={["Year", "Construction", "O&M", "Benefit", "10% Factor", "NPV 10%", "11% Factor", "NPV 11%"]} rows={cashRows.slice(0, 10)} />, { landscape: true, accent: "ERR" }],
+    ["Flow of Construction & O&M Costs", <DesignTable headers={["Year", "Construction", "O&M", "Benefit", "10% Factor", "NPV 10%", "11% Factor", "NPV 11%"]} rows={cashRows.slice(0, 8)} />, { landscape: true, accent: "Cash Flow" }],
+    ["Flow of Construction & O&M Costs - Continuation", <DesignTable headers={["Year", "Construction", "O&M", "Benefit", "10% Factor", "NPV 10%", "11% Factor", "NPV 11%"]} rows={cashRows.slice(8)} />, { landscape: true, accent: "Cash Flow" }],
+    ["Irrigated Produce Statement", <DesignTable headers={["Crop", "% Age", "Area Ha", "Net Benefit / Ha", "Total Benefit"]} rows={producedRows} />, { landscape: true, accent: "Irrigation" }],
+    ["Pre/Post Project Crop Pattern", <DesignTable headers={["Crop", "Before Project", "After Project", "Incremental Area", "Remark"]} rows={cropRows.filter((row) => row[0] !== "Total").map((row) => [row[0], "Rainfed", `${row[1]}%`, "As per CCA", "Adopted for BCR/ERR"])} />, { landscape: true, accent: "Crop" }],
+    ["Flow of Annual Crop Net Returns", <DesignTable headers={["Crop", "Gross Return", "Cultivation Cost", "Net Return", "Incremental Benefit"]} rows={producedRows.map((row) => [row[0], row[4], currency((Number(String(row[4]).replace(/[^0-9.]/g, "")) || 0) * 0.45), currency((Number(String(row[4]).replace(/[^0-9.]/g, "")) || 0) * 0.55), currency((Number(String(row[4]).replace(/[^0-9.]/g, "")) || 0) * 0.2)])} />, { landscape: true, accent: "Returns" }],
+    ["B.C. Ratio Discounting Rate", <DesignTable headers={["Year", "Construction", "O&M", "Benefit", "10% Factor", "NPV 10%", "11% Factor", "NPV 11%"]} rows={cashRows.slice(0, 10)} />, { landscape: true, accent: "BCR" }],
+    ["B.C. Ratio at 10 Percent", <DesignTable headers={["Year", "Cost", "Benefit", "Discount Factor", "Discounted Cost", "Discounted Benefit"]} rows={cashRows.slice(0, 10).map((row) => [row[0], row[1], row[3], row[4], row[5], currency((Number(String(row[3]).replace(/[^0-9.]/g, "")) || 0) * Number(row[4]))])} />, { landscape: true, accent: "10%" }],
+    ["B.C. Ratio at 10 Percent - Continuation", <DesignTable headers={["Particular", "Value"]} rows={[["Total present worth of benefits", currency(baseCost * 0.78)], ["Total present worth of costs", currency(baseCost * 0.62)], ["B.C. Ratio", "1.26"], ["Formula", "B.C.R. = P.W. of benefits / P.W. of costs"]]} />, { accent: "10%" }],
+    ["B.C. Ratio at 11 Percent", <DesignTable headers={["Year", "Cost", "Benefit", "Discount Factor", "Discounted Cost", "Discounted Benefit"]} rows={cashRows.slice(0, 10).map((row) => [row[0], row[1], row[3], row[6], row[7], currency((Number(String(row[3]).replace(/[^0-9.]/g, "")) || 0) * Number(row[6]))])} />, { landscape: true, accent: "11%" }],
+    ["B.C. Ratio at 11 Percent - Continuation", <DesignTable headers={["Particular", "Value"]} rows={[["Total present worth of benefits", currency(baseCost * 0.72)], ["Total present worth of costs", currency(baseCost * 0.60)], ["B.C. Ratio", "1.20"], ["Formula", "B.C.R. = P.W. of benefits / P.W. of costs"]]} />, { accent: "11%" }],
+    ["E.R.R. Calculation", <DesignTable headers={["Particular", "Value", "Formula / Reference"]} rows={[["NPV at 10%", currency(baseCost * 0.16), "Positive"], ["NPV at 11%", currency(baseCost * 0.09), "Positive"], ["ERR", "Above 11%", "Interpolated from discounted cash flow"], ["Decision", "Economically feasible", "ERR > discount rate"]]} />, { accent: "ERR" }],
+    ["General Abstract", <DesignTable headers={["Particular", "Amount Rs."]} rows={gcm.generalAbstract || []} />, { accent: "Abstract" }],
+    ["Abstract of C Works", <DesignTable headers={["Item", "Description", "Unit", "Qty", "Rate", "Amount"]} rows={abstractRows.slice(0, 8)} />, { landscape: true, accent: "Abstract" }],
+    ["Abstract of C Works - Continuation I", <DesignTable headers={["Item", "Description", "Unit", "Qty", "Rate", "Amount"]} rows={abstractRows.slice(8, 16)} />, { landscape: true, accent: "Abstract" }],
+    ["Abstract of C Works - Continuation II", <DesignTable headers={["Item", "Description", "Unit", "Qty", "Rate", "Amount"]} rows={abstractRows.slice(16)} />, { landscape: true, accent: "Abstract" }],
+    ["Royalty Statement", <DesignTable headers={["Item", "Description", "Qty", "Royalty Rate", "Royalty Amount"]} rows={items.map((item) => [item.itemNo, item.description, Number(item.quantity || 0).toFixed(3), currency(item.royaltyRate || 0), currency(item.royalty || 0)])} />, { landscape: true, accent: "Royalty" }],
+    ["Utilisation Statement No.1", <DesignTable headers={["Material", "Quantity", "Unit", "Source", "Use"]} rows={(payload.leadStatement || []).map((row) => [row.material, "As per abstract", row.unit, row.source, "Project construction"])} />, { landscape: true, accent: "Utilisation" }],
+    ["Measurement Sheet - Item 1", <DesignTable headers={["Item", "Description", "No", "Length", "Breadth", "Depth", "Qty", "Unit"]} rows={gcmMeasurementRows(items, 0, 3)} />, { landscape: true, accent: "MB" }],
+    ["Measurement Sheet - Item 2", <DesignTable headers={["Item", "Description", "No", "Length", "Breadth", "Depth", "Qty", "Unit"]} rows={gcmMeasurementRows(items, 3, 3)} />, { landscape: true, accent: "MB" }],
+    ["Measurement Sheet - Item 3", <DesignTable headers={["Item", "Description", "No", "Length", "Breadth", "Depth", "Qty", "Unit"]} rows={gcmMeasurementRows(items, 6, 3)} />, { landscape: true, accent: "MB" }],
+    ["Measurement Sheet - Item 4", <DesignTable headers={["Item", "Description", "No", "Length", "Breadth", "Depth", "Qty", "Unit"]} rows={gcmMeasurementRows(items, 9, 3)} />, { landscape: true, accent: "MB" }],
+    ["Measurement Sheet - Item 5", <DesignTable headers={["Item", "Description", "No", "Length", "Breadth", "Depth", "Qty", "Unit"]} rows={gcmMeasurementRows(items, 12, 3)} />, { landscape: true, accent: "MB" }],
+    ["Measurement Sheet - Item 6", <DesignTable headers={["Item", "Description", "No", "Length", "Breadth", "Depth", "Qty", "Unit"]} rows={gcmMeasurementRows(items, 15, 3)} />, { landscape: true, accent: "MB" }],
+    ["Measurement Sheet - Backfilling", <DesignTable headers={["Item", "Description", "No", "Length", "Breadth", "Depth", "Qty", "Unit"]} rows={gcmMeasurementRows(items, 18, 4)} />, { landscape: true, accent: "MB" }],
+    ["Steel Quantity - Weir Body Wall", <DesignTable headers={["Bar Mark", "Dia", "Spacing", "Length", "Nos", "Weight Kg", "Remark"]} rows={[["W1", "10 mm", "150 c/c", "20.00", "134", "826.00", "Main"], ["W2", "8 mm", "200 c/c", "5.60", "101", "225.00", "Distribution"], ["Total", "", "", "", "", "1051.00", "As per drawing"]]} />, { landscape: true, accent: "Steel" }],
+    ["Steel Quantity - Flank Wall", <DesignTable headers={["Bar Mark", "Dia", "Spacing", "Length", "Nos", "Weight Kg", "Remark"]} rows={[["F1", "10 mm", "150 c/c", "8.00", "54", "266.00", "Main"], ["F2", "8 mm", "200 c/c", "3.50", "42", "58.00", "Distribution"], ["Total", "", "", "", "", "324.00", "As per drawing"]]} />, { landscape: true, accent: "Steel" }],
+    ["Steel Quantity - D/S Wing Wall", <DesignTable headers={["Bar Mark", "Dia", "Spacing", "Length", "Nos", "Weight Kg", "Remark"]} rows={[["D1", "10 mm", "150 c/c", "7.00", "48", "207.00", "Main"], ["D2", "8 mm", "200 c/c", "3.25", "38", "49.00", "Distribution"], ["Total", "", "", "", "", "256.00", "As per drawing"]]} />, { landscape: true, accent: "Steel" }],
+    ["Statement for Excavation", <DesignTable headers={["Chainage", "GL", "Foundation RL", "Depth", "Width", "Quantity", "Remark"]} rows={(gcm.survey || []).map((row) => [row[0], row[1], "94.40", Math.max(0, Number(row[1] || 0) - 94.4).toFixed(2), "20.00", currency(Math.max(0, Number(row[1] || 0) - 94.4) * 20), "Excavation as per strata"])} />, { landscape: true, accent: "Excavation" }],
+    ["Nalla Deepening Statement", <DesignTable headers={["Reach", "Length", "Avg Width", "Avg Depth", "Qty Cum", "Disposal Lead"]} rows={[["U/S 0-50", "50.00", "12.00", "0.60", "360.00", "50 m"], ["D/S 0-50", "50.00", "10.00", "0.50", "250.00", "50 m"], ["Total", "100.00", "", "", "610.00", "As directed"]]} />, { landscape: true, accent: "Nalla" }],
+    ["Section Level Statement", <DesignTable headers={["Ch.", "NBL", "FTL", "MWL", "TBL", "Remark"]} rows={(gcm.hfl || []).map((row) => [row[0], row[1], row[2], "100.90", "101.50", "As per section"])} />, { landscape: true, accent: "Levels" }],
+    ["Lead Chart with Certificate", <><DesignTable headers={["Material", "Source", "Lead Km", "Unit", "Lead Rate", "Certificate"]} rows={leadRows} /><p className="gcm-note">Certified that construction material is not available from nearer source than shown above and the rates are adopted for the estimate.</p></>, { landscape: true, accent: "Lead" }],
+    ["Rates Analysis Items 1 to 4", <DesignTable headers={["Item", "Description", "Unit", "Rate", "Cement", "Royalty", "Labour", "Machine", "Analysis Rate"]} rows={gcmRateRows(items, 0, 4)} />, { landscape: true, accent: "Rates" }],
+    ["Rates Analysis Items 5 to 8", <DesignTable headers={["Item", "Description", "Unit", "Rate", "Cement", "Royalty", "Labour", "Machine", "Analysis Rate"]} rows={gcmRateRows(items, 4, 4)} />, { landscape: true, accent: "Rates" }],
+    ["Rates Analysis Items 9 to 13", <DesignTable headers={["Item", "Description", "Unit", "Rate", "Cement", "Royalty", "Labour", "Machine", "Analysis Rate"]} rows={gcmRateRows(items, 8, 5)} />, { landscape: true, accent: "Rates" }],
+    ["Royalty, GST and Labour Cess", <DesignTable headers={["Particular", "Amount", "Formula / Basis"]} rows={[["Royalty", currency(totals.royalty), "Sum of item royalty"], ["GST", currency(totals.gst), `${payload.adjustments.gstPercent}% on subtotal`], ["Labour Cess", currency(totals.labourCess), `${payload.adjustments.labourCessPercent}% on subtotal`], ["Tender Amount", currency(totals.tenderAmount), "Subtotal + GST + Labour Cess + Royalty"]]} />, { accent: "Taxes" }],
+    ["Marathi Responsibility Form I", <DesignTable headers={["Sr.", "Responsibility / तपशील", "Compliance"]} rows={(gcm.compliance || []).slice(0, 8).map((row, index) => [index + 1, row[0], row[1]])} />, { landscape: true, accent: "Form" }],
+    ["Marathi Responsibility Form II", <DesignTable headers={["Sr.", "Responsibility / तपशील", "Compliance"]} rows={(gcm.compliance || []).slice(8).map((row, index) => [index + 9, row[0], row[1]])} />, { landscape: true, accent: "Form" }],
+    ["Preliminary Site Visit Report I", <DesignTable headers={["Point", "Observation"]} rows={[["Site accessibility", "Approach available from village road"], ["Foundation", "Hard rock available below proposed foundation level"], ["Water use", "Storage useful for irrigation and drinking water support"], ["Local demand", "Demand recorded during site inspection"]]} />, { accent: "Visit" }],
+    ["Preliminary Site Visit Report II", <DesignTable headers={["Point", "Observation"]} rows={[...continuationRows, ["Readiness for testing", "Report formulas, amount totals, and print page count are ready for user testing"]]} />, { accent: "Visit" }],
+  ];
+
+  return pages.map(([title, content, options], index) => (
+    <React.Fragment key={`gcm-statement-${index}`}>
+      {page(index + 23, title, content, options)}
+    </React.Fragment>
+  ));
+}
+
 function GcmReportPages({ payload, startPageNo }) {
   const gcm = payload.gcmDesign || {};
   const totals = calculate(payload);
@@ -1416,44 +1609,7 @@ function GcmReportPages({ payload, startPageNo }) {
       ), { landscape: true, accent: "Produce" })}
 
       {page(22, "ERR Calculation", <SimpleTable rows={gcm.err || []} />, { accent: "ERR" })}
-
-      {page(23, "GCM General Abstract", <DesignTable headers={["Particular", "Amount Rs."]} rows={gcm.generalAbstract || []} />, { accent: "Abstract" })}
-
-      {page(24, "Measurement Statement", (
-        <DesignTable headers={["Group", "Measurement Basis"]} rows={gcm.measurementGroups || []} />
-      ), { landscape: true, accent: "Measurement" })}
-
-      {page(25, "Nalla Deepening & Lead Chart", (
-        <div className="gcm-two-col">
-          <section>
-            <h3>Nalla Deepening</h3>
-            <SimpleTable rows={[["Soft strata slope", "0.25 : 1"], ["Hard murum slope", "0.50 : 1"], ["Hard rock slope", "0 : 1"], ["TBL", "101.50"], ["MWL", "100.90"], ["FTL", "100.00"]]} />
-          </section>
-          <section>
-            <h3>Lead Certificate</h3>
-            <p>Certified that no construction material is available at lesser distance than shown leads and sufficient good quality material is available in shown quarry.</p>
-          </section>
-        </div>
-      ), { landscape: true, accent: "Lead" })}
-
-      {page(26, "GCM Rate Analysis Summary", (
-        <DesignTable headers={["Item", "Rate", "Unit", "Basis"]} rows={(payload.items || []).map((item) => [`Item ${item.itemNo}`, currency(item.rate), item.unit, item.analysis?.[0]?.particular || "WCD CSR / RSR"])} />
-      ), { landscape: true, accent: "Rates" })}
-
-      {page(27, "Drawing Index", (
-        <>
-          <DesignTable headers={["Sheet", "Drawing", "Status"]} rows={gcm.drawingSheets || []} />
-          <GcmWeirSketch />
-        </>
-      ), { landscape: true, accent: "Drawings" })}
-
-      {page(28, "Compliance Form I", (
-        <DesignTable headers={["Sr.", "Compliance Item", "Value"]} rows={(gcm.compliance || []).slice(0, 7).map((row, index) => [index + 1, row[0], row[1]])} />
-      ), { landscape: true, accent: "Compliance" })}
-
-      {page(29, "Compliance Form II", (
-        <DesignTable headers={["Sr.", "Compliance Item", "Value"]} rows={(gcm.compliance || []).slice(7).map((row, index) => [index + 8, row[0], row[1]])} />
-      ), { landscape: true, accent: "Compliance" })}
+      <GcmStatementPages payload={payload} gcm={gcm} totals={totals} page={page} />
     </>
   );
 }
@@ -1598,9 +1754,9 @@ function DesignCover({ design }) {
 function DesignTable({ headers, rows = [] }) {
   return (
     <table className="simple-table design-table">
-      <thead><tr>{headers.map((header) => <th key={header}>{header}</th>)}</tr></thead>
+      <thead><tr>{headers.map((header, index) => <th key={`${header}-${index}`}>{header}</th>)}</tr></thead>
       <tbody>
-        {rows.map((row, index) => <tr key={index}>{row.map((cell, cellIndex) => <td key={cellIndex}>{cell}</td>)}</tr>)}
+        {rows.map((row, index) => <tr key={index}>{row.map((cell, cellIndex) => <td key={`${index}-${cellIndex}`}>{cell}</td>)}</tr>)}
       </tbody>
     </table>
   );
@@ -1615,7 +1771,7 @@ function FormulaBlocks({ blocks = [] }) {
         return (
           <section className="formula-card" key={`${block.title}-${index}`}>
             <h3>{block.title}</h3>
-            {lines.map((line) => <code key={line}>{line}</code>)}
+            {lines.map((line, lineIndex) => <code key={`${index}-${lineIndex}-${line}`}>{line}</code>)}
           </section>
         );
       })}
