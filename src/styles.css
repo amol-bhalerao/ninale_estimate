@@ -1281,6 +1281,225 @@ details[open] summary {
   text-align: center;
 }
 
+.map-placeholder span,
+.map-placeholder small {
+  display: block;
+}
+
+.map-placeholder small {
+  color: #687789;
+  font-size: 0.72rem;
+  font-weight: 700;
+  max-width: 360px;
+}
+
+.map-sheet-grid {
+  align-items: stretch;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 0.9fr 1.4fr;
+}
+
+.drawing-frame {
+  background: #fff;
+  border: 2px solid #273544;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 560px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.drawing-workline {
+  border-bottom: 1px solid #273544;
+  display: grid;
+  gap: 2px;
+  padding: 7px 10px;
+  text-align: center;
+}
+
+.drawing-workline strong {
+  color: #142033;
+  font-size: 0.82rem;
+}
+
+.drawing-workline span {
+  color: #506174;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.drawing-canvas {
+  min-height: 0;
+  padding: 8px;
+}
+
+.drawing-canvas .bridge-sketch,
+.drawing-canvas .long-section,
+.drawing-canvas .define-cross-sketch {
+  border: 1px solid #9fb0bf;
+  height: 100%;
+  margin: 0;
+}
+
+.drawing-title-block {
+  border-top: 1px solid #273544;
+  display: grid;
+  grid-template-columns: 2.4fr 0.7fr 1fr 1.5fr 2.2fr;
+}
+
+.drawing-title-block > div {
+  border-right: 1px solid #273544;
+  display: grid;
+  gap: 2px;
+  padding: 6px 8px;
+}
+
+.drawing-title-block > div:last-child {
+  border-right: 0;
+}
+
+.drawing-title-block span,
+.drawing-title-block small {
+  color: #596b7d;
+  font-size: 0.58rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.drawing-title-block strong {
+  color: #142033;
+  font-size: 0.68rem;
+  line-height: 1.2;
+}
+
+.drawing-title-block .sign-grid {
+  align-content: end;
+  grid-template-columns: repeat(3, 1fr);
+  min-height: 64px;
+  text-align: center;
+}
+
+.define-cross-sketch {
+  background: linear-gradient(#fff, #fbfdff);
+  overflow: hidden;
+  position: relative;
+}
+
+.cross-terrain {
+  border-top: 3px solid #687789;
+  height: 120px;
+  left: 6%;
+  position: absolute;
+  right: 6%;
+  top: 58%;
+  transform: skewY(-8deg);
+}
+
+.cross-hfl {
+  border-top: 1.5px dashed #2563eb;
+  left: 8%;
+  position: absolute;
+  right: 8%;
+  top: 42%;
+}
+
+.cross-hfl span,
+.dimension-line,
+.site-label,
+.cross-chainage {
+  background: #fff;
+  color: #142033;
+  font-size: 0.7rem;
+  font-weight: 900;
+  padding: 3px 5px;
+  position: absolute;
+}
+
+.cross-hfl span {
+  top: -20px;
+}
+
+.cross-bank {
+  background: #f8fbff;
+  border: 1px solid #9fb0bf;
+  color: #142033;
+  font-size: 0.74rem;
+  font-weight: 900;
+  padding: 8px 12px;
+  position: absolute;
+  top: 31%;
+}
+
+.cross-bank.left { left: 9%; }
+.cross-bank.right { right: 9%; }
+
+.comp-band {
+  align-items: center;
+  background: rgba(238, 247, 251, 0.88);
+  border: 1px solid #273544;
+  color: #142033;
+  display: flex;
+  font-size: 0.72rem;
+  font-weight: 900;
+  justify-content: center;
+  line-height: 1.35;
+  position: absolute;
+  text-align: center;
+  top: 43%;
+}
+
+.comp-one {
+  height: 104px;
+  left: 31%;
+  width: 14%;
+}
+
+.comp-two {
+  height: 158px;
+  left: 45%;
+  width: 20%;
+}
+
+.comp-three {
+  height: 118px;
+  left: 65%;
+  width: 16%;
+}
+
+.cross-chainage {
+  bottom: 12%;
+}
+
+.ch31 { left: 30%; }
+.ch35 { left: 47%; }
+.ch42 { left: 77%; }
+
+.dimension-line.waterway {
+  left: 41%;
+  top: 22%;
+}
+
+.dimension-line.cross-width {
+  left: 36%;
+  top: 23%;
+}
+
+.site-label.left-bank {
+  left: 11%;
+  top: 34%;
+}
+
+.site-label.right-bank {
+  right: 10%;
+  top: 34%;
+}
+
+.site-label.bed-label {
+  left: 39%;
+  top: 78%;
+}
+
 .terrain-line,
 .hfl-line,
 .road-line,
@@ -1785,6 +2004,60 @@ details[open] summary {
 
   .long-section {
     height: 275px;
+  }
+
+  .map-sheet-grid {
+    gap: 8px;
+    grid-template-columns: 0.85fr 1.55fr;
+  }
+
+  .drawing-frame {
+    border-width: 1.5px;
+    height: 160mm;
+    margin-top: 4px;
+  }
+
+  .drawing-workline {
+    padding: 4px 8px;
+  }
+
+  .drawing-workline strong {
+    font-size: 0.62rem;
+  }
+
+  .drawing-workline span {
+    font-size: 0.52rem;
+  }
+
+  .drawing-canvas {
+    padding: 5px;
+  }
+
+  .drawing-title-block {
+    grid-template-columns: 2.5fr 0.7fr 1fr 1.35fr 2fr;
+  }
+
+  .drawing-title-block > div {
+    padding: 4px 6px;
+  }
+
+  .drawing-title-block span,
+  .drawing-title-block small {
+    font-size: 0.46rem;
+  }
+
+  .drawing-title-block strong {
+    font-size: 0.52rem;
+  }
+
+  .drawing-title-block .sign-grid {
+    min-height: 42px;
+  }
+
+  .drawing-canvas .bridge-sketch,
+  .drawing-canvas .long-section,
+  .drawing-canvas .define-cross-sketch {
+    height: 100%;
   }
 
   .road-sketch {

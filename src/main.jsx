@@ -879,20 +879,25 @@ function Report({ project, onEdit, onPrint }) {
   const ratePages = chunk(totals.computedItems, 2);
   const workType = payload.meta?.workType || project.work_type || "";
   const reportKind = payload.design ? "bridgeDesign" : payload.roadDesign ? "roadDesign" : workType === "Road" ? "road" : workType === "Bridge" ? "bridge" : "standard";
-  const prefixPageCount = reportKind === "bridgeDesign" ? 12 : reportKind === "roadDesign" ? 8 : reportKind === "road" ? 4 : reportKind === "bridge" ? 2 : 0;
+  const prefixPageCount = reportKind === "bridgeDesign" ? 13 : reportKind === "roadDesign" ? 8 : reportKind === "road" ? 4 : reportKind === "bridge" ? 2 : 0;
   let pageNo = 1;
   const sections = [
     ["Cover", 1],
     ["Auto Index", 2],
     ...(reportKind === "bridgeDesign" ? [
-      ["Design Data", 3],
-      ["Linear Waterway", 4],
-      ["Hydraulic Gradient", 5],
-      ["Cross Section Data", 6],
-      ["Compartment Calculations", 7],
+      ["Design Data & Discharge Formula", 3],
+      ["Linear Waterway Calculation", 4],
+      ["Hydraulic Gradient Calculation", 5],
+      ["Defined Cross Section & Site of Crossing", 6],
+      ["Compartment I Calculation", 7],
+      ["Compartment II Calculation", 8],
+      ["Compartment III Calculation", 9],
       ["Discharge Summary", 10],
-      ["Toposheet / Catchment Reference", 11],
-      ["Design Drawing Sheets", 12],
+      ["Toposheet Map & Catchment Area", 11],
+      ["Plan & L-section Drawing", 12],
+      ["Bridge Site Section", 13],
+      ["Define Cross Section Drawing", 14],
+      ["L-section Drawing", 15],
     ] : []),
     ...(reportKind === "roadDesign" ? [
       ["Road Design Inputs", 3],
@@ -1237,6 +1242,18 @@ function roadQuantityBasisFallback() {
 
 function DesignReportPages({ payload, startPageNo }) {
   const design = payload.design;
+  const drawingSheet = (index, fallbackTitle, fallbackScale) => {
+    const row = design.drawingSheets?.[index] || [];
+    return {
+      sheet: row[0] || `Sheet ${index + 1}`,
+      title: row[1] || fallbackTitle,
+      scale: row[2] || fallbackScale,
+    };
+  };
+  const planSheet = drawingSheet(0, "Plan & L-section of RCC box cell bridge", "Scale 1:100");
+  const siteSheet = drawingSheet(1, "Bridge site section", "Scale H 1 cm = 1.5 m, V 1 cm = 1.5 m");
+  const crossSheet = drawingSheet(2, "Define cross-section with compartments", "Scale H 1 cm = 1.5 m, V 1 cm = 1.5 m");
+  const longSheet = drawingSheet(3, "Longitudinal section from U/S to D/S", "Scale H 1 cm = 1 m, V 1 cm = 1 m");
   return (
     <>
       <ReportPage pageNo={startPageNo} className="design-page">
@@ -1251,8 +1268,6 @@ function DesignReportPages({ payload, startPageNo }) {
         <h2 className="decorated-heading">Linear Waterway Calculation</h2>
         <SimpleTable rows={design.waterway || []} />
         <FormulaBlocks blocks={design.waterwayFormulaBlocks || []} />
-        <h2 className="decorated-heading compact-heading">Hydraulic Gradient</h2>
-        <DesignTable headers={["CH", "Bed Level", "Length", "Diff.", "Gradient"]} rows={design.gradient || []} />
       </ReportPage>
       <ReportPage pageNo={startPageNo + 2} className="design-page">
         <ReportHeader payload={payload} accent="Gradient" />
@@ -1271,32 +1286,51 @@ function DesignReportPages({ payload, startPageNo }) {
       <CompartmentPage payload={payload} pageNo={startPageNo + 6} accent="Comp III" title="Compartment III Calculation" rows={design.compartmentIII || []} formula={design.compartmentFormulaBlocks?.III} />
       <ReportPage pageNo={startPageNo + 7} className="design-page">
         <ReportHeader payload={payload} accent="Discharge" />
-        <h2 className="decorated-heading compact-heading">Discharge Check</h2>
-        <DesignTable headers={["Compartment", "Discharge", "Velocity", "Area"]} rows={design.discharge || []} />
+        <h2 className="decorated-heading">Discharge Summary</h2>
+        <DesignTable headers={["Compartment", "Discharge Q", "Velocity", "Area"]} rows={design.discharge || []} />
+        <FormulaBlocks blocks={design.dischargeSummaryFormulaBlocks || []} />
       </ReportPage>
       <ReportPage pageNo={startPageNo + 8} landscape className="design-page">
         <ReportHeader payload={payload} accent="Catchment" />
         <h2 className="decorated-heading">Toposheet Map & Catchment Reference</h2>
-        <DesignTable headers={["Reference", "Value"]} rows={[["Toposheet", "56/B-7"], ["Scale", "1:50,000"], ["Latitude", "18 deg 21 min 8.89 sec N"], ["Longitude", "76 deg 16 min 22.11 sec E"], ["Catchment Area", "0.55 Sq.Km."]]} />
-        <div className="map-placeholder">Toposheet / catchment map placeholder</div>
+        <div className="map-sheet-grid">
+          <SimpleTable rows={design.toposheet || [["Toposheet", "56/B-7"], ["Scale", "1:50,000"], ["Catchment Area", "0.55 Sq.Km."]]} />
+          <div className="map-placeholder">
+            <span>Toposheet / Catchment Map</span>
+            <small>Upload CAD/GIS exported map image here for exact survey reference.</small>
+          </div>
+        </div>
       </ReportPage>
       <ReportPage pageNo={startPageNo + 9} landscape className="design-page">
         <ReportHeader payload={payload} accent="Drawing" />
-        <h2 className="decorated-heading">Plan & L-Section - Generated Schematic</h2>
-        <BridgeSketch />
+        <h2 className="decorated-heading">{planSheet.title}</h2>
+        <BridgeDrawingFrame payload={payload} title={planSheet.title} sheet={planSheet.sheet} scale={planSheet.scale}>
+          <BridgeSketch />
+        </BridgeDrawingFrame>
         <ul className="design-notes">
           {(design.drawingNotes || []).map((note) => <li key={note}>{note}</li>)}
         </ul>
       </ReportPage>
       <ReportPage pageNo={startPageNo + 10} landscape className="design-page">
         <ReportHeader payload={payload} accent="Drawing" />
-        <h2 className="decorated-heading">Bridge Site Section - Generated Schematic</h2>
-        <BridgeSketch />
+        <h2 className="decorated-heading">{siteSheet.title}</h2>
+        <BridgeDrawingFrame payload={payload} title={siteSheet.title} sheet={siteSheet.sheet} scale={siteSheet.scale}>
+          <BridgeSketch variant="site" />
+        </BridgeDrawingFrame>
       </ReportPage>
       <ReportPage pageNo={startPageNo + 11} landscape className="design-page">
         <ReportHeader payload={payload} accent="Drawing" />
-        <h2 className="decorated-heading">L-Section - Generated Schematic</h2>
-        <LongSectionSketch />
+        <h2 className="decorated-heading">{crossSheet.title}</h2>
+        <BridgeDrawingFrame payload={payload} title={crossSheet.title} sheet={crossSheet.sheet} scale={crossSheet.scale}>
+          <DefineCrossSectionSketch />
+        </BridgeDrawingFrame>
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 12} landscape className="design-page">
+        <ReportHeader payload={payload} accent="Drawing" />
+        <h2 className="decorated-heading">{longSheet.title}</h2>
+        <BridgeDrawingFrame payload={payload} title={longSheet.title} sheet={longSheet.sheet} scale={longSheet.scale}>
+          <LongSectionSketch />
+        </BridgeDrawingFrame>
       </ReportPage>
     </>
   );
@@ -1356,9 +1390,46 @@ function FormulaBlocks({ blocks = [] }) {
   );
 }
 
-function BridgeSketch() {
+function BridgeDrawingFrame({ payload, title, sheet, scale, children }) {
   return (
-    <div className="bridge-sketch">
+    <section className="drawing-frame">
+      <div className="drawing-workline">
+        <strong>{payload.design?.cover?.workName || payload.meta.title}</strong>
+        <span>{payload.design?.cover?.location || payload.meta.subtitle}</span>
+      </div>
+      <div className="drawing-canvas">
+        {children}
+      </div>
+      <div className="drawing-title-block">
+        <div>
+          <span>Drawing Title</span>
+          <strong>{title}</strong>
+        </div>
+        <div>
+          <span>Sheet</span>
+          <strong>{sheet}</strong>
+        </div>
+        <div>
+          <span>Scale</span>
+          <strong>{scale}</strong>
+        </div>
+        <div>
+          <span>Department</span>
+          <strong>{payload.meta.division}</strong>
+        </div>
+        <div className="sign-grid">
+          <small>Junior Engineer</small>
+          <small>Sub Divisional Engineer</small>
+          <small>Executive Engineer</small>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BridgeSketch({ variant = "plan" }) {
+  return (
+    <div className={clsx("bridge-sketch", `bridge-sketch-${variant}`)}>
       <div className="terrain-line" />
       <div className="hfl-line"><span>HFL 703.30</span></div>
       <div className="road-line"><span>RTL RL 704.65</span></div>
@@ -1369,6 +1440,32 @@ function BridgeSketch() {
       <div className="cutoff right-cutoff" />
       <div className="apron upstream">U/S apron</div>
       <div className="apron downstream">D/S apron</div>
+      {variant === "site" && (
+        <>
+          <span className="site-label left-bank">Left bank</span>
+          <span className="site-label right-bank">Right bank</span>
+          <span className="site-label bed-label">Lowest bed RL 702.00</span>
+          <span className="dimension-line waterway">4.00 m clear opening</span>
+        </>
+      )}
+    </div>
+  );
+}
+
+function DefineCrossSectionSketch() {
+  return (
+    <div className="define-cross-sketch">
+      <div className="cross-terrain" />
+      <div className="cross-hfl"><span>H.F.L. 703.30</span></div>
+      <div className="cross-bank left">Left Bank</div>
+      <div className="cross-bank right">Right Bank</div>
+      <div className="comp-band comp-one">Comp. I<br />Q 2.699<br />V 3.883</div>
+      <div className="comp-band comp-two">Comp. II<br />Q 20.911<br />V 4.973</div>
+      <div className="comp-band comp-three">Comp. III<br />Q 5.800<br />V 2.750</div>
+      <span className="cross-chainage ch31">Ch.31</span>
+      <span className="cross-chainage ch35">Ch.35 / LBL 702.00</span>
+      <span className="cross-chainage ch42">Ch.42</span>
+      <span className="dimension-line cross-width">Defined cross-section compartments as per H.F.L.</span>
     </div>
   );
 }

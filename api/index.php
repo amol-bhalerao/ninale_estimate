@@ -556,6 +556,32 @@ function designBridgeTemplate(): array
             ['Compartment III', '5.800', '2.750', '2.11'],
             ['Total', '29.410', '3.869 avg.', '7.009'],
         ],
+        'dischargeSummaryFormulaBlocks' => [
+            [
+                'title' => 'Average Velocity Check',
+                'lines' => [
+                    'Total discharge from compartments = 29.410 Cumecs',
+                    'Design discharge by Modified Inglis formula = 11.73 Cumecs',
+                    'Total area at H.F.L. = 7.009 Sq.m',
+                    'Average velocity = Total design discharge / Total area',
+                    'Average velocity = 11.73 / 7.009 = 1.674 m/sec',
+                ],
+            ],
+        ],
+        'toposheet' => [
+            ['Toposheet map no.', '56/B-7'],
+            ['Scale', '1:50,000'],
+            ['Latitude', '18 deg 21 min 8.89 sec N'],
+            ['Longitude', '76 deg 16 min 22.11 sec E'],
+            ['Catchment Area', '0.55 Sq.Km.'],
+            ['Reference village', 'Tawarajkheda'],
+        ],
+        'drawingSheets' => [
+            ['Sheet 1', 'Plan & L-section of RCC box cell bridge', 'Scale 1:100'],
+            ['Sheet 2', 'Bridge site section', 'Scale H 1 cm = 1.5 m, V 1 cm = 1.5 m'],
+            ['Sheet 3', 'Define cross-section with compartments', 'Scale H 1 cm = 1.5 m, V 1 cm = 1.5 m'],
+            ['Sheet 4', 'Longitudinal section from U/S to D/S', 'Scale H 1 cm = 1 m, V 1 cm = 1 m'],
+        ],
         'drawingNotes' => [
             'RCC box cell bridge clear opening 2.0 m x 2.0 m.',
             '300 mm thick RCC M25 raft slab with cutoff wall, toe wall, upstream and downstream apron.',
