@@ -1148,111 +1148,103 @@ details[open] summary {
 }
 
 .gcm-weir-sketch {
-  background:
-    linear-gradient(#ffffff, #fbfdff),
-    repeating-linear-gradient(0deg, transparent 0 23px, rgba(148, 163, 184, 0.22) 24px);
-  border: 1px solid #9fb0bf;
-  height: 320px;
+  background: #fff;
+  border: 1px solid #b8c2cf;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px #eef2f7;
+  height: 430px;
   margin-top: 12px;
   overflow: hidden;
   position: relative;
 }
 
-.gcm-tbl,
-.gcm-mwl,
-.gcm-ftl,
-.gcm-foundation,
-.gcm-keywall,
-.gcm-apron,
-.gcm-body {
-  position: absolute;
+.gcm-weir-svg {
+  display: block;
+  height: 100%;
+  width: 100%;
 }
 
-.gcm-tbl,
-.gcm-mwl,
-.gcm-ftl {
-  background: #fff;
-  color: #142033;
-  font-size: 0.72rem;
-  font-weight: 900;
-  left: 7%;
-  padding: 2px 6px;
-  right: 7%;
+.weir-line {
+  fill: none;
+  stroke: #ff7a1a;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.1;
 }
 
-.gcm-tbl {
-  border-top: 2px solid #142033;
-  top: 13%;
+.weir-water {
+  fill: none;
+  stroke: #2563eb;
+  stroke-dasharray: 5 4;
+  stroke-linecap: round;
+  stroke-width: 1.4;
 }
 
-.gcm-mwl {
-  border-top: 1.5px dashed #2563eb;
-  top: 27%;
+.weir-water.thin {
+  stroke-dasharray: none;
+  stroke-width: 1.1;
 }
 
-.gcm-ftl {
-  border-top: 1.5px dashed #0f766e;
-  top: 40%;
+.weir-blue-guide {
+  stroke: #2563eb;
+  stroke-dasharray: 5 4;
+  stroke-width: 1;
 }
 
-.gcm-body {
-  align-items: center;
-  background: #f8fbff;
-  border: 2px solid #142033;
-  bottom: 20%;
-  color: #142033;
-  display: flex;
-  font-size: 0.82rem;
-  font-weight: 900;
-  justify-content: center;
-  left: 42%;
-  line-height: 1.35;
-  text-align: center;
-  top: 25%;
-  width: 16%;
+.weir-guide {
+  stroke: #777;
+  stroke-dasharray: 2 2;
+  stroke-width: 1;
 }
 
-.gcm-foundation {
-  border-top: 7px solid #142033;
-  bottom: 15%;
-  color: #142033;
-  font-size: 0.74rem;
-  font-weight: 900;
-  left: 26%;
-  padding-top: 7px;
-  right: 26%;
-  text-align: center;
+.weir-dim {
+  fill: none;
+  stroke: #8a8a8a;
+  stroke-width: 1.1;
 }
 
-.gcm-keywall {
-  background: #142033;
-  bottom: 5%;
-  color: #fff;
-  font-size: 0.68rem;
-  font-weight: 800;
-  left: 48%;
-  padding-top: 42px;
-  text-align: center;
-  top: 75%;
-  width: 4%;
+.weir-triangle {
+  fill: #f8fbff;
+  stroke: #111827;
+  stroke-width: 1.4;
 }
 
-.gcm-apron {
-  border-top: 4px solid #687789;
-  bottom: 23%;
-  color: #142033;
-  font-size: 0.72rem;
-  font-weight: 900;
-  text-align: center;
-  width: 190px;
+.weir-label,
+.weir-level,
+.weir-magenta,
+.weir-red,
+.weir-orange {
+  font-family: Arial, Inter, system-ui, sans-serif;
+  font-size: 14px;
+  letter-spacing: 0;
 }
 
-.gcm-apron.upstream {
-  left: 13%;
+.weir-level {
+  fill: #111827;
+  font-size: 15px;
 }
 
-.gcm-apron.downstream {
-  right: 13%;
+.weir-label {
+  fill: #111827;
+}
+
+.weir-magenta {
+  fill: #ff00d4;
+}
+
+.weir-red {
+  fill: #f00;
+  font-weight: 700;
+}
+
+.weir-orange {
+  fill: #ff7a1a;
+}
+
+.weir-label.small,
+.weir-magenta.small,
+.weir-orange.small {
+  font-size: 12px;
 }
 
 .compact-heading {

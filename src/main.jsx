@@ -872,8 +872,8 @@ function EmptyState({ templates, onCreate }) {
 }
 
 const GCM_SECTION_TITLES = [
-  "Geographical Information & Lead Chart",
-  "Survey & Investigation",
+  "1 Geographical Information & 2 Lead Chart",
+  "3 Survey & Investigation",
   "Fund Head Sheet",
   "General Report",
   "Certificate",
@@ -1422,6 +1422,9 @@ function gcmCapacityRows(rawRows = []) {
 
 function GcmReferenceLabels() {
   const labels = [
+    ["1", "Geographical Information"],
+    ["2", "Lead Chart"],
+    ["3", "Survey & Investigation"],
     ["4", "Gradient Calculation"],
     ["5", "Hydraulic Calculation"],
     ["6", "Capacity"],
@@ -1672,21 +1675,21 @@ function GcmReportPages({ payload, startPageNo }) {
 
   return (
     <>
-      {page(0, "Geographical Information & Lead Chart", (
+      {page(0, "1 Geographical Information & 2 Lead Chart", (
         <div className="gcm-two-col">
           <section>
-            <h3>Geographical Information</h3>
+            <h3>1 Geographical Information</h3>
             <SimpleTable rows={gcm.geography || []} />
             <GcmReferenceLabels />
           </section>
           <section>
-            <h3>Lead Chart</h3>
+            <h3>2 Lead Chart</h3>
             <DesignTable headers={["Material", "Place", "Km", "Rate / Unit"]} rows={(payload.leadStatement || []).map((row) => [row.material, row.source, row.distanceKm, `${row.leadCharge} / ${row.unit}`])} />
           </section>
         </div>
       ), { landscape: true, accent: "GCM Data" })}
 
-      {page(1, "Survey & Investigation", (
+      {page(1, "3 Survey & Investigation", (
         <>
           <DesignTable headers={["CH", "Avg GL", "Below", "Always", "SS/HM", "SR/HR"]} rows={gcm.survey || []} />
           <SimpleTable rows={gcm.siteData || []} />
@@ -1771,7 +1774,7 @@ function GcmReportPages({ payload, startPageNo }) {
       {page(15, "Design of Weir Body Wall", (
         <>
           <SimpleTable rows={gcm.weirAssumptions || []} />
-          <GcmWeirSketch />
+          <GcmWeirSketch values={gcm.weirDimensions} />
         </>
       ), { landscape: true, accent: "Weir Design" })}
 
@@ -1804,17 +1807,90 @@ function GcmReportPages({ payload, startPageNo }) {
   );
 }
 
-function GcmWeirSketch() {
+function GcmWeirSketch({ values = {} }) {
+  const dimension = {
+    topWidth: "0.60",
+    surcharge: "0.90",
+    waterDepth: "2.50",
+    height: "5.60",
+    totalHeight: "6.50",
+    foundationDepth: "3.10",
+    baseWidth: "3.81",
+    totalBase: "4.41",
+    slopeOffset: "0.68",
+    toeProjection: "0.612",
+    toeDrop: "0.90",
+    tbl: "101.50",
+    mwl: "100.90",
+    ftl: "100.00",
+    nbl: "97.50",
+    fl: "94.40",
+    ...values,
+  };
+
   return (
-    <div className="gcm-weir-sketch">
-      <div className="gcm-tbl">TBL 101.50</div>
-      <div className="gcm-mwl">MWL 100.90</div>
-      <div className="gcm-ftl">FTL 100.00</div>
-      <div className="gcm-body">Weir Body<br />Top 0.60 m<br />Height 5.60 m</div>
-      <div className="gcm-foundation">Foundation RL 94.40</div>
-      <div className="gcm-apron upstream">U/S apron 3.10 m</div>
-      <div className="gcm-apron downstream">D/S apron 3.10 m</div>
-      <div className="gcm-keywall">Key wall 4.50 m</div>
+    <div className="gcm-weir-sketch" aria-label="Design of weir body wall drawing">
+      <svg className="gcm-weir-svg" viewBox="0 0 760 430" role="img">
+        <defs>
+          <marker id="weir-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#888" />
+          </marker>
+        </defs>
+
+        <path className="weir-water" d="M188 50 H305 C350 50 386 64 404 98" />
+        <path className="weir-water thin" d="M406 55 l-16 8 m16 -8 l-6 18" />
+        <polygon className="weir-triangle" points="218,32 238,32 228,49" />
+
+        <line className="weir-guide" x1="92" y1="116" x2="196" y2="116" />
+        <line className="weir-guide" x1="92" y1="348" x2="205" y2="348" />
+        <line className="weir-guide" x1="438" y1="116" x2="535" y2="116" />
+        <line className="weir-guide" x1="438" y1="245" x2="535" y2="245" />
+        <line className="weir-guide" x1="438" y1="348" x2="535" y2="348" />
+
+        <path className="weir-dim" markerStart="url(#weir-arrow)" markerEnd="url(#weir-arrow)" d="M130 55 V348" />
+        <line className="weir-dim" x1="122" y1="55" x2="138" y2="55" />
+        <text className="weir-magenta" x="98" y="218">{dimension.totalHeight}</text>
+
+        <path className="weir-dim" markerStart="url(#weir-arrow)" markerEnd="url(#weir-arrow)" d="M176 116 V348" />
+        <line className="weir-dim" x1="168" y1="116" x2="184" y2="116" />
+        <text className="weir-magenta" x="158" y="240">{dimension.height}</text>
+
+        <path className="weir-line" d="M230 348 H470" />
+        <path className="weir-line" d="M254 348 V118 H316 L455 348 Z" />
+        <line className="weir-blue-guide" x1="316" y1="118" x2="316" y2="348" />
+        <line className="weir-blue-guide" x1="400" y1="263" x2="455" y2="263" />
+        <line className="weir-blue-guide" x1="455" y1="263" x2="455" y2="348" />
+
+        <text className="weir-red" x="272" y="236">W<tspan baselineShift="sub">1</tspan></text>
+        <text className="weir-red" x="350" y="258">W<tspan baselineShift="sub">2</tspan></text>
+        <text className="weir-red" x="278" y="92">W<tspan baselineShift="sub">3</tspan></text>
+        <text className="weir-magenta small" x="274" y="108">{dimension.topWidth}</text>
+        <text className="weir-label small" x="372" y="216">{dimension.slopeOffset}</text>
+        <text className="weir-orange small" x="410" y="259">{dimension.toeProjection}</text>
+        <text className="weir-orange small" x="456" y="304">{dimension.toeDrop}</text>
+
+        <path className="weir-dim" markerStart="url(#weir-arrow)" markerEnd="url(#weir-arrow)" d="M316 370 H455" />
+        <text className="weir-magenta" x="366" y="365">{dimension.baseWidth}</text>
+        <path className="weir-dim" markerStart="url(#weir-arrow)" markerEnd="url(#weir-arrow)" d="M254 399 H455" />
+        <text className="weir-magenta" x="366" y="407">{dimension.totalBase}</text>
+
+        <path className="weir-dim" markerStart="url(#weir-arrow)" markerEnd="url(#weir-arrow)" d="M535 118 V240" />
+        <text className="weir-magenta" x="470" y="178">{dimension.waterDepth}</text>
+        <path className="weir-dim" markerStart="url(#weir-arrow)" markerEnd="url(#weir-arrow)" d="M535 247 V348" />
+        <text className="weir-label" x="522" y="305">{dimension.foundationDepth}</text>
+
+        <line className="weir-dim" x1="468" y1="56" x2="468" y2="118" />
+        <line className="weir-dim" x1="460" y1="55" x2="476" y2="55" />
+        <line className="weir-dim" x1="460" y1="118" x2="476" y2="118" />
+        <text className="weir-label" x="480" y="70">{dimension.topWidth}</text>
+        <text className="weir-magenta" x="480" y="94">{dimension.surcharge}</text>
+
+        <text className="weir-level" x="580" y="70">TBL&nbsp; {dimension.tbl}</text>
+        <text className="weir-level" x="580" y="94">MWL&nbsp; {dimension.mwl}</text>
+        <text className="weir-level" x="580" y="114">FTL&nbsp; {dimension.ftl}</text>
+        <text className="weir-level" x="580" y="242">NBL&nbsp; {dimension.nbl}</text>
+        <text className="weir-level" x="580" y="342">FL&nbsp;&nbsp;&nbsp; {dimension.fl}</text>
+      </svg>
     </div>
   );
 }
