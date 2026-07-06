@@ -1436,6 +1436,143 @@ details[open] summary {
   width: 42px;
 }
 
+.gcm-engineering-sheet {
+  color: #111827;
+  display: grid;
+  gap: 10px;
+}
+
+.gcm-sheet-title {
+  align-items: start;
+  display: grid;
+  font-family: Roboto, Inter, ui-sans-serif, system-ui, sans-serif;
+  gap: 6px;
+  justify-content: center;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+.gcm-sheet-title span {
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.gcm-sheet-title b {
+  font-size: 0.84rem;
+  font-weight: 500;
+}
+
+.engineering-table {
+  border: 3px solid #777;
+  border-collapse: collapse;
+  font-family: Roboto, Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.66rem;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.engineering-table th,
+.engineering-table td {
+  background: #fff;
+  border: 1px solid #333;
+  line-height: 1.1;
+  padding: 2px 3px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.engineering-table thead th {
+  font-weight: 500;
+}
+
+.engineering-table .subhead th {
+  border-bottom: 2px solid #111;
+  font-weight: 500;
+}
+
+.engineering-table .total-row td {
+  border-top: 2px solid #111;
+  font-weight: 500;
+}
+
+.hfl-table th:nth-child(1),
+.hfl-table td:nth-child(1) { width: 42px; }
+.hfl-table th:nth-child(2),
+.hfl-table td:nth-child(2) { width: 68px; }
+.hfl-table th:nth-child(3),
+.hfl-table td:nth-child(3) { width: 58px; }
+.hfl-table th:nth-child(4),
+.hfl-table td:nth-child(4) { width: 55px; }
+.hfl-table th:nth-child(5),
+.hfl-table td:nth-child(5) { width: 58px; }
+.hfl-table th:nth-child(6),
+.hfl-table td:nth-child(6),
+.hfl-table th:nth-child(7),
+.hfl-table td:nth-child(7),
+.hfl-table th:nth-child(8),
+.hfl-table td:nth-child(8),
+.hfl-table th:nth-child(9),
+.hfl-table td:nth-child(9),
+.hfl-table th:nth-child(10),
+.hfl-table td:nth-child(10) { width: 58px; }
+
+.hfl-calc-grid {
+  align-items: center;
+  column-gap: 16px;
+  display: grid;
+  font-family: Roboto, Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.72rem;
+  grid-template-columns: 130px 18px minmax(0, 1fr);
+  margin: 6px 0 0 24px;
+  max-width: 760px;
+  row-gap: 5px;
+}
+
+.hfl-calc-grid span {
+  text-align: right;
+}
+
+.hfl-calc-grid strong {
+  font-weight: 500;
+}
+
+.fraction-text {
+  display: inline-block;
+  line-height: 1.05;
+  text-align: center;
+}
+
+.fraction-text span {
+  border-top: 2px solid #111;
+  display: block;
+  margin-top: 1px;
+  padding-top: 1px;
+  text-align: center;
+}
+
+.afflux-table {
+  font-size: 0.66rem;
+}
+
+.afflux-formula {
+  border: 1px solid #333;
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+}
+
+.afflux-formula p {
+  margin: 0;
+}
+
+.afflux-formula code {
+  background: #fff;
+  color: #111827;
+  font-family: "Roboto Mono", Consolas, ui-monospace, monospace;
+  font-size: 0.68rem;
+  white-space: normal;
+}
+
 .formula-grid {
   display: grid;
   gap: 10px;

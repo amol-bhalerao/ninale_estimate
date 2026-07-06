@@ -883,7 +883,7 @@ const GCM_SECTION_TITLES = [
   "4 Gradient Calculation",
   "5 Hydraulic Calculation",
   "6 Capacity",
-  "HFL Calculation at MWL",
+  "HFL Calculation on Proposed Site",
   "Afflux Calculation",
   "Discharge Calculation",
   "Hydraulic Jump & Apron",
@@ -1490,6 +1490,95 @@ function GcmCapacityTable({ rows = [] }) {
   );
 }
 
+function gcmHflRows(gcm) {
+  const rows = gcm.hflDetailed || [
+    ["-30.00", "104.51", "", "100.00", "0.00", "3.00", "", "0.00", "0.00"],
+    ["0.00", "102.94", "1.57", "100.00", "0.00", "0.00", "30.00", "0.00", "0.00"],
+    ["30.00", "101.40", "1.54", "100.00", "0.00", "0.00", "30.00", "0.00", "0.00"],
+    ["40.00", "100.38", "1.02", "100.00", "0.00", "0.00", "10.00", "0.00", "0.00"],
+    ["50.00", "99.50", "0.88", "100.00", "0.50", "0.25", "10.00", "10.04", "2.50"],
+    ["52.00", "99.40", "0.10", "100.00", "0.60", "0.55", "2.00", "2.00", "1.10"],
+    ["54.00", "98.15", "1.25", "100.00", "1.85", "1.22", "2.00", "2.36", "2.45"],
+    ["56.00", "97.74", "0.41", "100.00", "2.26", "2.06", "2.00", "2.04", "4.11"],
+    ["58.00", "97.59", "0.15", "100.00", "2.41", "2.34", "2.00", "2.01", "4.67"],
+    ["60.00", "97.50", "0.09", "100.00", "2.50", "2.46", "2.00", "2.00", "4.91"],
+    ["62.00", "97.63", "0.13", "100.00", "2.37", "2.44", "2.00", "2.00", "4.87"],
+    ["66.00", "98.17", "0.54", "100.00", "1.83", "2.10", "4.00", "4.04", "8.40"],
+    ["72.00", "99.39", "1.22", "100.00", "0.61", "1.22", "6.00", "6.12", "7.32"],
+    ["90.00", "99.90", "0.51", "100.00", "0.10", "0.35", "18.00", "18.01", "6.39"],
+    ["105.00", "101.00", "1.10", "100.00", "0.00", "0.05", "15.00", "0.00", "0.75"],
+    ["135.00", "102.67", "1.67", "100.00", "0.00", "0.00", "30.00", "0.00", "0.00"],
+    ["165.00", "105.21", "2.54", "100.00", "0.00", "0.00", "30.00", "0.00", "0.00"],
+  ];
+  return rows.map((row, index) => [index + 1, ...row]);
+}
+
+function GcmHflCalculationSheet({ gcm }) {
+  const rows = gcmHflRows(gcm);
+  return (
+    <div className="gcm-engineering-sheet">
+      <div className="gcm-sheet-title">
+        <span>HFL&nbsp;&nbsp; CALCULATION&nbsp;&nbsp; ON&nbsp;&nbsp; PROPOSED&nbsp;&nbsp; SITE</span>
+        <b>FTL :&nbsp; 100.00</b>
+        <b>HFL :&nbsp; 100.00</b>
+      </div>
+      <table className="engineering-table hfl-table">
+        <thead>
+          <tr>
+            <th>Sr.No.</th><th>Ch</th><th>GL</th><th>Diff</th><th>HFL</th><th>Ht</th><th>AV Ht</th><th>L</th><th>SI L</th><th>Area</th>
+          </tr>
+          <tr className="subhead">
+            {Array.from({ length: 10 }, (_, index) => <th key={index}>{index + 1}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => <tr key={row[0]}>{row.map((cell, index) => <td key={`${row[0]}-${index}`}>{cell}</td>)}</tr>)}
+          <tr className="total-row">
+            <td colSpan="3"></td><td>0.69</td><td colSpan="2"></td><td>Total</td><td>135.00</td><td>50.62<br /><small>m</small></td><td>47.47<br /><small>Sqm</small></td>
+          </tr>
+        </tbody>
+      </table>
+      <div className="hfl-calc-grid">
+        <span>C/s Area , A</span><b>=</b><strong>47.47</strong>
+        <span>Perimeter, P</span><b>=</b><strong>50.62</strong>
+        <span>Bed Gradient, S</span><b>=</b><strong>246.57</strong>
+        <span>Value N</span><b>=</b><strong>0.030</strong>
+        <span>R</span><b>=</b><strong>A/P&nbsp;&nbsp;&nbsp;&nbsp;0.938 m</strong>
+        <span>V</span><b>=</b><strong className="fraction-text">( R )<sup>2/3</sup><br /><span>n x √s</span></strong>
+        <span>Velocity V</span><b>=</b><strong>1 / 0.030 x 0.938<sup>2/3</sup> x 1 / √246.57 = 2.03 m/sec</strong>
+        <span>Discharge Q</span><b>=</b><strong>A x V = 47.47 x 2.034 = 96.54 Cumecs</strong>
+      </div>
+    </div>
+  );
+}
+
+function GcmAffluxCalculationSheet() {
+  const rows = [
+    ["C/s area before obstruction (A)", "47.47 Sqm", "From HFL calculation"],
+    ["Area occupied by bandhara body", "1 x 20 x 0.69 = 13.75 Sqm", "Structure obstruction"],
+    ["Opening deduction", "2 x 2 x 1.50 = 6.00 Sqm", "Vents / opening"],
+    ["Net obstruction area", "13.75 - 6.00 = 7.75 Sqm", "Deduct opening"],
+    ["Clear flowing area (a)", "47.47 - 7.75 = 39.72 Sqm", "After obstruction"],
+    ["Velocity head", "V² = 2.034² = 4.14", "Molesworth formula"],
+  ];
+  return (
+    <div className="gcm-engineering-sheet">
+      <div className="gcm-sheet-title">
+        <span>AFFLUX&nbsp;&nbsp; CALCULATION</span>
+        <b>HFL :&nbsp; 100.00</b>
+      </div>
+      <DesignTable serial={false} className="afflux-table" headers={["Particular", "Calculation", "Remark"]} rows={rows} />
+      <div className="afflux-formula">
+        <p><b>By Molesworth formula</b></p>
+        <code>h = V² / 17.85 x (A / a - 1) + 0.0152 x (A / a - 1)</code>
+        <code>h = 4.14 / 17.85 x (47.47 / 39.72 - 1) + 0.0152 x (47.47 / 39.72 - 1)</code>
+        <code>h = 0.048 m, say afflux = 0.050 m</code>
+        <code>AHFL = HFL + afflux = 100.000 + 0.050 = 100.050 m</code>
+      </div>
+    </div>
+  );
+}
+
 function GcmStatementPages({ payload, gcm, totals, page }) {
   const items = totals.computedItems || [];
   const baseCost = totals.tenderAmount || 1000000;
@@ -1668,14 +1757,11 @@ function GcmReportPages({ payload, startPageNo }) {
         <GcmCapacityTable rows={gcm.capacity || []} />
       ), { landscape: true, accent: "Capacity" })}
 
-      {page(11, "HFL Calculation on Proposed Site - MWL 100.90", (
-        <>
-          <DesignTable headers={["Ch", "GL", "HFL", "Height", "Area"]} rows={gcm.hfl || []} />
-          <DesignTable headers={["Ch", "GL", "MWL", "Height", "Area"]} rows={gcm.mwl || []} />
-        </>
+      {page(11, "HFL Calculation on Proposed Site", (
+        <GcmHflCalculationSheet gcm={gcm} />
       ), { landscape: true, accent: "HFL" })}
 
-      {page(12, "Afflux Calculation", <FormulaBlocks blocks={(gcm.formulaBlocks || []).slice(2, 3)} />, { accent: "Afflux" })}
+      {page(12, "Afflux Calculation", <GcmAffluxCalculationSheet />, { landscape: true, accent: "Afflux" })}
       {page(13, "Discharge Calculation", <FormulaBlocks blocks={(gcm.formulaBlocks || []).slice(1, 2)} />, { accent: "Discharge" })}
 
       {page(14, "Hydraulic Jump & Apron", (
