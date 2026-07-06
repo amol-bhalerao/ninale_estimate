@@ -640,6 +640,19 @@ details[open] summary {
   font-weight: 700;
 }
 
+.project-search {
+  margin-bottom: 14px;
+}
+
+.empty-search {
+  background: #fbfdff;
+  border: 1px dashed #cddcec;
+  border-radius: 14px;
+  color: #566477;
+  font-weight: 700;
+  padding: 16px;
+}
+
 .empty {
   display: grid;
   gap: 12px;
@@ -772,6 +785,52 @@ details[open] summary {
 
 .cover-page footer {
   margin-top: 110px;
+}
+
+.design-cover-page .report-content {
+  align-content: center;
+  display: grid;
+  min-height: 990px;
+}
+
+.gov-cover {
+  border: 2px solid #cddcec;
+  display: grid;
+  gap: 12px;
+  min-height: 760px;
+  padding: 34px 28px;
+  text-align: center;
+}
+
+.gov-cover strong {
+  color: #142033;
+  font-size: 1.08rem;
+  text-transform: uppercase;
+}
+
+.gov-cover span {
+  font-weight: 800;
+}
+
+.gov-cover h1 {
+  color: #142033;
+  font-size: 2rem;
+  margin: 42px 0 10px;
+  text-decoration: underline;
+  text-decoration-color: #d8b35f;
+  text-transform: uppercase;
+}
+
+.gov-cover p {
+  font-size: 1rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.gov-cover footer {
+  align-self: end;
+  font-weight: 800;
+  margin-top: 72px;
 }
 
 .simple-table,
@@ -1002,6 +1061,10 @@ details[open] summary {
   margin-bottom: 12px;
 }
 
+.design-page .simple-table {
+  font-size: 0.72rem;
+}
+
 .design-notes {
   border: 1px solid #cddcec;
   margin: 12px 0 0;
@@ -1020,6 +1083,21 @@ details[open] summary {
   margin: 10px 0;
   overflow: hidden;
   position: relative;
+}
+
+.map-placeholder {
+  align-items: center;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.78)),
+    repeating-linear-gradient(45deg, #eff6ff 0 12px, #fff 12px 24px);
+  border: 1px dashed #9fb0bf;
+  color: #687789;
+  display: grid;
+  font-weight: 800;
+  height: 260px;
+  margin-top: 14px;
+  place-items: center;
+  text-align: center;
 }
 
 .terrain-line,
@@ -1474,6 +1552,31 @@ details[open] summary {
 
   .summary-page .table-fit .abstract {
     font-size: 0.46rem;
+  }
+
+  .design-cover-page .report-content {
+    min-height: calc(297mm - 24mm);
+  }
+
+  .gov-cover {
+    min-height: calc(297mm - 44mm);
+    padding: 24px;
+  }
+
+  .design-page .simple-table {
+    font-size: 0.56rem;
+  }
+
+  .bridge-sketch {
+    height: 320px;
+  }
+
+  .long-section {
+    height: 275px;
+  }
+
+  .map-placeholder {
+    height: 210px;
   }
 
   .table-scroll,

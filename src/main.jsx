@@ -533,19 +533,40 @@ function Stat({ label, value }) {
 }
 
 function Projects({ projects, activeProject, templates, openProject, onCreate, printProject }) {
+  const [query, setQuery] = useState("");
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredProjects = projects.filter((project) => {
+    const haystack = [
+      project.name,
+      project.work_type,
+      project.payload?.meta?.title,
+      project.payload?.meta?.subtitle,
+      project.payload?.meta?.division,
+      project.payload?.design?.cover?.workName,
+      project.payload?.design?.cover?.location,
+      project.payload?.design?.cover?.region,
+      project.payload?.design?.cover?.circle,
+    ].join(" ").toLowerCase();
+    return !normalizedQuery || haystack.includes(normalizedQuery);
+  });
   return (
     <section className="surface">
       <div className="section-title">
         <h2>Projects</h2>
         <CreateProjectMenu templates={templates} onCreate={onCreate} />
       </div>
+      <label className="field project-search">
+        <span>Search projects</span>
+        <input placeholder="Search by project name, type, location, division..." value={query} onChange={(event) => setQuery(event.target.value)} />
+      </label>
       <div className="project-list">
-        {projects.map((project) => {
+        {filteredProjects.map((project) => {
           const totals = calculate(project.payload);
           return (
             <ProjectCard key={project.id} active={activeProject?.id === project.id} project={project} totals={totals} openProject={openProject} printProject={printProject} />
           );
         })}
+        {!filteredProjects.length && <div className="empty-search">No projects match this search.</div>}
       </div>
     </section>
   );
@@ -761,12 +782,21 @@ function Report({ project, onEdit, onPrint }) {
   const totals = calculate(payload);
   const abstractPages = chunk(totals.computedItems, 8);
   const ratePages = chunk(totals.computedItems, 2);
-  const designPageCount = payload.design ? 5 : 0;
+  const designPageCount = payload.design ? 12 : 0;
   let pageNo = 1;
   const sections = [
     ["Cover", 1],
     ["Auto Index", 2],
-    ...(payload.design ? [["Design Data & Hydraulic Calculations", 3]] : []),
+    ...(payload.design ? [
+      ["Design Data", 3],
+      ["Linear Waterway", 4],
+      ["Hydraulic Gradient", 5],
+      ["Cross Section Data", 6],
+      ["Compartment Calculations", 7],
+      ["Discharge Summary", 10],
+      ["Toposheet / Catchment Reference", 11],
+      ["Design Drawing Sheets", 12],
+    ] : []),
     ["K1, K2, K3 Calculation", 3 + designPageCount],
     ["Abstract Estimate", 4 + designPageCount],
     ["Lead Statement", 4 + designPageCount + abstractPages.length],
@@ -782,19 +812,23 @@ function Report({ project, onEdit, onPrint }) {
         <button onClick={onEdit}><Settings2 size={16} /> Edit project values</button>
         <button onClick={onPrint}><Printer size={16} /> Print current report</button>
       </div>
-      <ReportPage pageNo={pageNo++} className="cover-page">
-        <div className="cover-k">
-          <span>K1 {payload.adjustments.labourComponentPercent}</span>
-          <span>K2 {payload.adjustments.materialComponentPercent}</span>
-          <span>K3 {payload.adjustments.fuelComponentPercent}</span>
-          <strong>100.00</strong>
-        </div>
-        <h1>K1, K2 & K3</h1>
-        <p>of</p>
-        <h2>{payload.meta.title}</h2>
-        <h3>{payload.meta.subtitle}</h3>
-        <footer>{payload.meta.preparedBy}<br />{payload.meta.division}</footer>
-      </ReportPage>
+      {payload.design ? (
+        <DesignCoverPage payload={payload} pageNo={pageNo++} />
+      ) : (
+        <ReportPage pageNo={pageNo++} className="cover-page">
+          <div className="cover-k">
+            <span>K1 {payload.adjustments.labourComponentPercent}</span>
+            <span>K2 {payload.adjustments.materialComponentPercent}</span>
+            <span>K3 {payload.adjustments.fuelComponentPercent}</span>
+            <strong>100.00</strong>
+          </div>
+          <h1>K1, K2 & K3</h1>
+          <p>of</p>
+          <h2>{payload.meta.title}</h2>
+          <h3>{payload.meta.subtitle}</h3>
+          <footer>{payload.meta.preparedBy}<br />{payload.meta.division}</footer>
+        </ReportPage>
+      )}
 
       <ReportPage pageNo={pageNo++}>
         <ReportHeader payload={payload} accent="Index" />
@@ -946,6 +980,24 @@ function EmptyReport() {
   return <section className="surface empty"><h2>Report</h2><p>Select or create a project to view report pages.</p></section>;
 }
 
+function DesignCoverPage({ payload, pageNo }) {
+  const cover = payload.design?.cover || {};
+  return (
+    <ReportPage pageNo={pageNo} className="design-cover-page">
+      <div className="gov-cover">
+        <strong>{cover.department || "Government of Maharashtra"}</strong>
+        <span>{cover.region}</span>
+        <span>{cover.circle}</span>
+        <span>{cover.division}</span>
+        <h1>Estimate</h1>
+        <p><b>Name of Work :</b> {cover.workName || payload.meta.title}</p>
+        <p>{cover.location || payload.meta.subtitle}</p>
+        <footer>{payload.meta.preparedBy}<br />{payload.meta.division}</footer>
+      </div>
+    </ReportPage>
+  );
+}
+
 function DesignReportPages({ payload, startPageNo }) {
   const design = payload.design;
   return (
@@ -963,26 +1015,60 @@ function DesignReportPages({ payload, startPageNo }) {
         <h2 className="decorated-heading compact-heading">Hydraulic Gradient</h2>
         <DesignTable headers={["CH", "Bed Level", "Length", "Diff.", "Gradient"]} rows={design.gradient || []} />
       </ReportPage>
-      <ReportPage pageNo={startPageNo + 2} landscape className="design-page">
+      <ReportPage pageNo={startPageNo + 2} className="design-page">
+        <ReportHeader payload={payload} accent="Gradient" />
+        <h2 className="decorated-heading">Hydraulic Gradient Calculation</h2>
+        <DesignTable headers={["CH", "Bed Level", "Length", "Diff.", "Gradient"]} rows={design.gradient || []} />
+        <SimpleTable rows={[["Bed Gradient Adopted", "0.0172"], ["Reference Chainage", "0 m to 420 m"], ["Remark", "Adopted as per hydraulic statement"]]} />
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 3} landscape className="design-page">
         <ReportHeader payload={payload} accent="Cross Section" />
         <h2 className="decorated-heading">Defined Cross Section & Site of Crossing</h2>
         <DesignTable headers={["Chainage", "Ground Level", "HFL", "Depth", "Compartment"]} rows={design.crossSection || []} />
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 4} className="design-page">
+        <ReportHeader payload={payload} accent="Comp I" />
+        <h2 className="decorated-heading">Compartment I Calculation</h2>
+        <DesignTable headers={["CH", "Bed", "HFL", "Depth", "Area"]} rows={design.compartmentI || []} />
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 5} className="design-page">
+        <ReportHeader payload={payload} accent="Comp II" />
+        <h2 className="decorated-heading">Compartment II Calculation</h2>
+        <DesignTable headers={["CH", "Bed", "HFL", "Depth", "Area"]} rows={design.compartmentII || []} />
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 6} className="design-page">
+        <ReportHeader payload={payload} accent="Comp III" />
+        <h2 className="decorated-heading">Compartment III Calculation</h2>
+        <DesignTable headers={["CH", "Bed", "HFL", "Depth", "Area"]} rows={design.compartmentIII || []} />
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 7} className="design-page">
+        <ReportHeader payload={payload} accent="Discharge" />
         <h2 className="decorated-heading compact-heading">Discharge Check</h2>
         <DesignTable headers={["Compartment", "Discharge", "Velocity", "Area"]} rows={design.discharge || []} />
       </ReportPage>
-      <ReportPage pageNo={startPageNo + 3} landscape className="design-page">
+      <ReportPage pageNo={startPageNo + 8} landscape className="design-page">
+        <ReportHeader payload={payload} accent="Catchment" />
+        <h2 className="decorated-heading">Toposheet Map & Catchment Reference</h2>
+        <DesignTable headers={["Reference", "Value"]} rows={[["Toposheet", "56/B-7"], ["Scale", "1:50,000"], ["Latitude", "18 deg 21 min 8.89 sec N"], ["Longitude", "76 deg 16 min 22.11 sec E"], ["Catchment Area", "0.55 Sq.Km."]]} />
+        <div className="map-placeholder">Toposheet / catchment map placeholder</div>
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 9} landscape className="design-page">
         <ReportHeader payload={payload} accent="Drawing" />
-        <h2 className="decorated-heading">Bridge Site Section - Generated Schematic</h2>
+        <h2 className="decorated-heading">Plan & L-Section - Generated Schematic</h2>
         <BridgeSketch />
         <ul className="design-notes">
           {(design.drawingNotes || []).map((note) => <li key={note}>{note}</li>)}
         </ul>
       </ReportPage>
-      <ReportPage pageNo={startPageNo + 4} landscape className="design-page">
+      <ReportPage pageNo={startPageNo + 10} landscape className="design-page">
         <ReportHeader payload={payload} accent="Drawing" />
-        <h2 className="decorated-heading">L-Section & Catchment Reference - Generated Schematic</h2>
+        <h2 className="decorated-heading">Bridge Site Section - Generated Schematic</h2>
+        <BridgeSketch />
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 11} landscape className="design-page">
+        <ReportHeader payload={payload} accent="Drawing" />
+        <h2 className="decorated-heading">L-Section - Generated Schematic</h2>
         <LongSectionSketch />
-        <DesignTable headers={["Reference", "Value"]} rows={[["Toposheet", "56/B-7"], ["Scale", "1:50,000"], ["Latitude", "18 deg 21 min 8.89 sec N"], ["Longitude", "76 deg 16 min 22.11 sec E"], ["Catchment Area", "0.55 Sq.Km."]]} />
       </ReportPage>
     </>
   );
