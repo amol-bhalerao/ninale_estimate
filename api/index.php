@@ -120,6 +120,12 @@ function seedTemplates(PDO $pdo): void
             'payload' => workTemplate('Road', 'Construction of Flexible Pavement Road', 'Two lane approach road with bituminous surface', 5400000, ['Earthwork excavation', 'Granular sub-base', 'Wet mix macadam', 'Dense bituminous macadam', 'Bituminous concrete', 'Road markings']),
         ],
         [
+            'name' => 'Road Design Estimate - Flexible Pavement',
+            'work_type' => 'Road Design',
+            'description' => 'Road design-estimate template with traffic data, pavement crust design, geometric statement, quantities, drawings and road furniture pages.',
+            'payload' => roadDesignTemplate(),
+        ],
+        [
             'name' => 'KT Weir / Kolhapuri Bandhara Template',
             'work_type' => 'Kolhapuri Bandhara',
             'description' => 'Hydraulic structure estimate with excavation, cutoff trench, masonry, RCC piers, gates, pitching and approach works.',
@@ -233,6 +239,112 @@ function workTemplate(string $workType, string $title, string $subtitle, float $
         ],
         'items' => $items,
     ];
+}
+
+function roadDesignTemplate(): array
+{
+    $payload = workTemplate(
+        'Road Design',
+        'Construction of Flexible Pavement Road',
+        'Village road improvement with pavement design, drainage and road furniture',
+        7600000,
+        ['Earthwork in cutting and banking', 'Granular sub-base layer', 'Wet mix macadam base course', 'Prime coat and tack coat', 'Dense bituminous macadam', 'Bituminous concrete wearing course', 'Cement concrete side drain', 'Road markings and sign boards']
+    );
+
+    $payload['meta'] = [
+        'workType' => 'Road Design',
+        'title' => 'Flexible Pavement Road Design Estimate',
+        'subtitle' => 'Improvement to village road with WMM, DBM and BC layers',
+        'division' => 'Public Works Division, Dharashiv',
+        'subdivision' => 'Public Works Sub Division, Dharashiv',
+        'preparedBy' => 'Executive Engineer',
+    ];
+
+    $payload['roadDesign'] = [
+        'cover' => [
+            'department' => 'Government of Maharashtra',
+            'region' => 'Public Works Region, Chhatrapati Sambhajinagar',
+            'circle' => 'Public Works Circle, Dharashiv',
+            'division' => 'Public Works Division, Dharashiv',
+            'workName' => 'Construction and improvement of flexible pavement village road',
+            'roadLine' => 'Design chainage 0/000 to 1/500',
+            'partLine' => 'Flexible pavement with side drain, road furniture and safety works',
+            'location' => 'Taluka Dharashiv, District Dharashiv',
+        ],
+        'inputs' => [
+            ['Road category', 'Village road / MDR approach'],
+            ['Design length', '1.500 Km'],
+            ['Carriageway width', '3.75 m'],
+            ['Formation width', '7.50 m'],
+            ['Design traffic', '1.50 MSA'],
+            ['Subgrade CBR', '6%'],
+            ['Design life', '10 years'],
+            ['Camber', '2.5% bituminous surface, 3.0% shoulder'],
+            ['Side drain', 'RCC / CC drain as per site requirement'],
+        ],
+        'traffic' => [
+            ['Initial commercial vehicles per day', '150 CVPD'],
+            ['Traffic growth rate', '7.5% per annum'],
+            ['Vehicle damage factor', '1.5'],
+            ['Lane distribution factor', '0.75'],
+            ['Design life', '10 years'],
+            ['Design traffic N', '1.50 MSA adopted'],
+        ],
+        'trafficFormulaBlocks' => [
+            [
+                'title' => 'Design Traffic Calculation',
+                'lines' => [
+                    'N = 365 x A x ((1 + r)^n - 1) / r x F x D',
+                    'A = initial commercial vehicles per day = 150',
+                    'r = annual growth rate = 0.075; n = 10 years',
+                    'F = vehicle damage factor = 1.5; D = lane distribution = 0.75',
+                    'N = 1.50 MSA adopted for pavement crust design',
+                ],
+            ],
+        ],
+        'pavement' => [
+            ['Layer', 'Thickness', 'Material', 'Remark'],
+            ['Subgrade', '500 mm', 'Compacted selected soil', 'CBR 6%'],
+            ['GSB', '150 mm', 'Granular sub-base', 'MoRTH grading'],
+            ['WMM', '250 mm', 'Wet mix macadam', 'Two layers'],
+            ['DBM', '50 mm', 'Dense bituminous macadam', 'Binder course'],
+            ['BC', '30 mm', 'Bituminous concrete', 'Wearing course'],
+        ],
+        'pavementFormulaBlocks' => [
+            [
+                'title' => 'Pavement Crust Adoption',
+                'lines' => [
+                    'Design traffic = 1.50 MSA and subgrade CBR = 6%',
+                    'Adopt GSB 150 mm + WMM 250 mm + DBM 50 mm + BC 30 mm',
+                    'Total pavement crust = 480 mm over prepared subgrade',
+                    'Layer thickness to be verified with latest IRC:37 chart before final sanction',
+                ],
+            ],
+        ],
+        'geometry' => [
+            ['Design speed', '30 Km/hr'],
+            ['Minimum horizontal radius', 'As per site / IRC for village road'],
+            ['Maximum gradient', '1 in 30 desirable, as per terrain'],
+            ['Stopping sight distance', '30 m minimum'],
+            ['Shoulder width', '1.875 m each side'],
+            ['Cross fall', '2.5% carriageway, 3.0% shoulder'],
+        ],
+        'quantityBasis' => [
+            ['Earthwork', 'Length x average width x average depth from L-section'],
+            ['GSB quantity', 'Length x compacted width x 0.150 m'],
+            ['WMM quantity', 'Length x compacted width x 0.250 m'],
+            ['DBM quantity', 'Length x carriageway width x 0.050 m'],
+            ['BC quantity', 'Length x carriageway width x 0.030 m'],
+            ['Road marking', 'Center/edge line length as per marking plan'],
+        ],
+        'drawingNotes' => [
+            'Attach CAD/GIS exported key plan, alignment plan, L-section, cross sections and pavement crust details for final report.',
+            'Current drawings are schematic placeholders until project-specific CAD/GIS images are uploaded.',
+            'Pavement layer and traffic formula values are editable through the road design template payload.',
+        ],
+    ];
+
+    return $payload;
 }
 
 function designBridgeTemplate(): array
@@ -661,12 +773,19 @@ function projectPayload(array $body, ?array $base = null): array
 function enrichDesignPayload(array $payload): array
 {
     $workType = $payload['meta']['workType'] ?? '';
-    if ($workType !== 'Bridge Design' && empty($payload['design'])) {
-        return $payload;
+    if ($workType === 'Bridge Design' || !empty($payload['design'])) {
+        $default = designBridgeTemplate();
+        $payload['design'] = array_replace_recursive($default['design'], $payload['design'] ?? []);
     }
 
-    $default = designBridgeTemplate();
-    $payload['design'] = array_replace_recursive($default['design'], $payload['design'] ?? []);
+    if ($workType === 'Road Design' || !empty($payload['roadDesign'])) {
+        $default = roadDesignTemplate();
+        $payload['roadDesign'] = array_replace_recursive($default['roadDesign'], $payload['roadDesign'] ?? []);
+    }
+
+    if ($workType !== 'Bridge Design' && $workType !== 'Road Design' && empty($payload['design']) && empty($payload['roadDesign'])) {
+        return $payload;
+    }
     return $payload;
 }
 

@@ -87,6 +87,59 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+function storageGet(key, fallback = "") {
+  try {
+    return window.localStorage.getItem(key) || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function storageSet(key, value) {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // localStorage can be blocked in private contexts; app still works in memory.
+  }
+}
+
+function projectSearchText(project) {
+  return [
+    project.name,
+    project.work_type,
+    project.payload?.meta?.title,
+    project.payload?.meta?.subtitle,
+    project.payload?.meta?.division,
+    project.payload?.design?.cover?.workName,
+    project.payload?.design?.cover?.location,
+    project.payload?.design?.cover?.region,
+    project.payload?.design?.cover?.circle,
+    project.payload?.roadDesign?.cover?.workName,
+    project.payload?.roadDesign?.cover?.location,
+    project.payload?.roadDesign?.cover?.roadLine,
+  ].join(" ").toLowerCase();
+}
+
+function filterProjects(projects, query, type) {
+  const normalizedQuery = query.trim().toLowerCase();
+  return projects.filter((project) => {
+    const typeMatch = !type || project.work_type === type || project.payload?.meta?.workType === type;
+    const queryMatch = !normalizedQuery || projectSearchText(project).includes(normalizedQuery);
+    return typeMatch && queryMatch;
+  });
+}
+
+function workTypeOptions(projects) {
+  return [...new Set(projects.map((project) => project.work_type || project.payload?.meta?.workType).filter(Boolean))].sort();
+}
+
+function formatDateBadge(value) {
+  if (!value) return "Not saved";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+
 function calculate(payload) {
   const items = payload?.items || [];
   const adjustments = payload?.adjustments || {};
@@ -169,8 +222,8 @@ function createBlankItem(itemNo) {
 }
 
 function App() {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [view, setView] = useState("dashboard");
+  const [loggedIn, setLoggedIn] = useState(() => storageGet("ninale.loggedIn") === "true");
+  const [view, setView] = useState(() => storageGet("ninale.view", "dashboard"));
   const [templates, setTemplates] = useState([]);
   const [projects, setProjects] = useState([]);
   const [activeProject, setActiveProject] = useState(null);
@@ -183,14 +236,30 @@ function App() {
     loadData();
   }, []);
 
+  useEffect(() => {
+    storageSet("ninale.loggedIn", loggedIn ? "true" : "false");
+  }, [loggedIn]);
+
+  useEffect(() => {
+    storageSet("ninale.view", view);
+  }, [view]);
+
+  useEffect(() => {
+    if (activeProject?.id) {
+      storageSet("ninale.activeProjectId", String(activeProject.id));
+    }
+  }, [activeProject?.id]);
+
   async function loadData() {
     try {
       const [templateRows, projectRows] = await Promise.all([api.templates(), api.projects()]);
       setTemplates(templateRows);
       setProjects(projectRows);
+      const storedProjectId = storageGet("ninale.activeProjectId");
+      const storedProject = projectRows.find((project) => String(project.id) === storedProjectId);
       const projectWithItems = projectRows.find((project) => (project.payload.items || []).length > 0);
-      if (projectWithItems || projectRows[0]) {
-        setActiveProject(projectWithItems || projectRows[0]);
+      if (storedProject || projectWithItems || projectRows[0]) {
+        setActiveProject(storedProject || projectWithItems || projectRows[0]);
       }
       setStatus(projectRows[0] ? "Ready" : "Create a project to begin");
     } catch (err) {
@@ -204,6 +273,7 @@ function App() {
     try {
       await api.login();
       setLoggedIn(true);
+      storageSet("ninale.loggedIn", "true");
       setError("");
     } catch (err) {
       setError(err.message);
@@ -359,7 +429,7 @@ function App() {
           <Wand2 size={18} />
           <span>{sidebarPinned ? "Auto hide off" : "Auto hide on"}</span>
         </button>
-        <button className="logout" onClick={() => setLoggedIn(false)} title="Logout">
+        <button className="logout" onClick={() => { setLoggedIn(false); storageSet("ninale.loggedIn", "false"); }} title="Logout">
           <LogOut size={18} />
           <span>Logout</span>
         </button>
@@ -422,6 +492,8 @@ function Login({ onLogin, error }) {
 }
 
 function Dashboard({ activeProject, projects, templates, onCreate, openProject, printProject }) {
+  const [query, setQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
   const totals = activeProject ? calculate(activeProject.payload) : null;
   const categories = useMemo(() => {
     return templates.reduce((groups, template) => {
@@ -431,7 +503,9 @@ function Dashboard({ activeProject, projects, templates, onCreate, openProject, 
       return groups;
     }, {});
   }, [templates]);
-  const recentProjects = projects.slice(0, 8);
+  const filteredProjects = filterProjects(projects, query, typeFilter);
+  const recentProjects = filteredProjects.slice(0, 8);
+  const types = workTypeOptions(projects);
   return (
     <section className="panel-grid">
       <Stat label="Projects" value={projects.length} />
@@ -443,6 +517,13 @@ function Dashboard({ activeProject, projects, templates, onCreate, openProject, 
           <h2>Project Dashboard</h2>
           <CreateProjectMenu templates={templates} onCreate={onCreate} />
         </div>
+        <ProjectFilters
+          query={query}
+          setQuery={setQuery}
+          typeFilter={typeFilter}
+          setTypeFilter={setTypeFilter}
+          types={types}
+        />
         <div className="dashboard-projects">
           {recentProjects.map((project) => {
             const projectTotals = calculate(project.payload);
@@ -457,6 +538,7 @@ function Dashboard({ activeProject, projects, templates, onCreate, openProject, 
               />
             );
           })}
+          {!recentProjects.length && <div className="empty-search">No projects match this dashboard filter.</div>}
         </div>
       </div>
       <div className="wide-panel">
@@ -512,6 +594,10 @@ function ProjectCard({ project, totals, active, openProject, printProject }) {
         <span className="project-type">{project.work_type}</span>
         <strong>{project.name}</strong>
         <small>{project.payload.items?.length || 0} items</small>
+        <div className="project-date-badges">
+          <span>Created {formatDateBadge(project.created_at)}</span>
+          <span>Updated {formatDateBadge(project.updated_at)}</span>
+        </div>
       </div>
       <b>Rs. {currency(totals.tenderAmount)}</b>
       <div className="row-actions">
@@ -534,31 +620,22 @@ function Stat({ label, value }) {
 
 function Projects({ projects, activeProject, templates, openProject, onCreate, printProject }) {
   const [query, setQuery] = useState("");
-  const normalizedQuery = query.trim().toLowerCase();
-  const filteredProjects = projects.filter((project) => {
-    const haystack = [
-      project.name,
-      project.work_type,
-      project.payload?.meta?.title,
-      project.payload?.meta?.subtitle,
-      project.payload?.meta?.division,
-      project.payload?.design?.cover?.workName,
-      project.payload?.design?.cover?.location,
-      project.payload?.design?.cover?.region,
-      project.payload?.design?.cover?.circle,
-    ].join(" ").toLowerCase();
-    return !normalizedQuery || haystack.includes(normalizedQuery);
-  });
+  const [typeFilter, setTypeFilter] = useState("");
+  const filteredProjects = filterProjects(projects, query, typeFilter);
+  const types = workTypeOptions(projects);
   return (
     <section className="surface">
       <div className="section-title">
         <h2>Projects</h2>
         <CreateProjectMenu templates={templates} onCreate={onCreate} />
       </div>
-      <label className="field project-search">
-        <span>Search projects</span>
-        <input placeholder="Search by project name, type, location, division..." value={query} onChange={(event) => setQuery(event.target.value)} />
-      </label>
+      <ProjectFilters
+        query={query}
+        setQuery={setQuery}
+        typeFilter={typeFilter}
+        setTypeFilter={setTypeFilter}
+        types={types}
+      />
       <div className="project-list">
         {filteredProjects.map((project) => {
           const totals = calculate(project.payload);
@@ -569,6 +646,24 @@ function Projects({ projects, activeProject, templates, openProject, onCreate, p
         {!filteredProjects.length && <div className="empty-search">No projects match this search.</div>}
       </div>
     </section>
+  );
+}
+
+function ProjectFilters({ query, setQuery, typeFilter, setTypeFilter, types }) {
+  return (
+    <div className="project-filters">
+      <label className="field project-search">
+        <span>Search projects</span>
+        <input placeholder="Search by project name, type, location, division..." value={query} onChange={(event) => setQuery(event.target.value)} />
+      </label>
+      <label className="field project-type-filter">
+        <span>Project type</span>
+        <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
+          <option value="">All project types</option>
+          {types.map((type) => <option key={type} value={type}>{type}</option>)}
+        </select>
+      </label>
+    </div>
   );
 }
 
@@ -782,12 +877,14 @@ function Report({ project, onEdit, onPrint }) {
   const totals = calculate(payload);
   const abstractPages = chunk(totals.computedItems, 8);
   const ratePages = chunk(totals.computedItems, 2);
-  const designPageCount = payload.design ? 12 : 0;
+  const workType = payload.meta?.workType || project.work_type || "";
+  const reportKind = payload.design ? "bridgeDesign" : payload.roadDesign ? "roadDesign" : workType === "Road" ? "road" : workType === "Bridge" ? "bridge" : "standard";
+  const prefixPageCount = reportKind === "bridgeDesign" ? 12 : reportKind === "roadDesign" ? 8 : reportKind === "road" ? 4 : reportKind === "bridge" ? 2 : 0;
   let pageNo = 1;
   const sections = [
     ["Cover", 1],
     ["Auto Index", 2],
-    ...(payload.design ? [
+    ...(reportKind === "bridgeDesign" ? [
       ["Design Data", 3],
       ["Linear Waterway", 4],
       ["Hydraulic Gradient", 5],
@@ -797,14 +894,32 @@ function Report({ project, onEdit, onPrint }) {
       ["Toposheet / Catchment Reference", 11],
       ["Design Drawing Sheets", 12],
     ] : []),
-    ["K1, K2, K3 Calculation", 3 + designPageCount],
-    ["Abstract Estimate", 4 + designPageCount],
-    ["Lead Statement", 4 + designPageCount + abstractPages.length],
-    ["Material Statement", 5 + designPageCount + abstractPages.length],
-    ["Escalation Component Statement", 6 + designPageCount + abstractPages.length],
-    ["Rate Analysis", 7 + designPageCount + abstractPages.length],
-    ["Estimate Summary", 7 + designPageCount + abstractPages.length + ratePages.length],
-    ["Machinery / POL Lead Charges", 8 + designPageCount + abstractPages.length + ratePages.length],
+    ...(reportKind === "roadDesign" ? [
+      ["Road Design Inputs", 3],
+      ["Traffic Design", 4],
+      ["Pavement Crust Design", 5],
+      ["Geometric Statement", 6],
+      ["Quantity Design Basis", 7],
+      ["Road Drawing Sheets", 8],
+    ] : []),
+    ...(reportKind === "road" ? [
+      ["Road Technical Statement", 3],
+      ["Pavement Layer Statement", 4],
+      ["Road Quantity Basis", 5],
+      ["Road Furniture Statement", 6],
+    ] : []),
+    ...(reportKind === "bridge" ? [
+      ["Bridge Technical Statement", 3],
+      ["Bridge Component Statement", 4],
+    ] : []),
+    ["K1, K2, K3 Calculation", 3 + prefixPageCount],
+    ["Abstract Estimate", 4 + prefixPageCount],
+    ["Lead Statement", 4 + prefixPageCount + abstractPages.length],
+    ["Material Statement", 5 + prefixPageCount + abstractPages.length],
+    ["Escalation Component Statement", 6 + prefixPageCount + abstractPages.length],
+    ["Rate Analysis", 7 + prefixPageCount + abstractPages.length],
+    ["Estimate Summary", 7 + prefixPageCount + abstractPages.length + ratePages.length],
+    ["Machinery / POL Lead Charges", 8 + prefixPageCount + abstractPages.length + ratePages.length],
   ];
   return (
     <section className="report-stack">
@@ -812,8 +927,8 @@ function Report({ project, onEdit, onPrint }) {
         <button onClick={onEdit}><Settings2 size={16} /> Edit project values</button>
         <button onClick={onPrint}><Printer size={16} /> Print current report</button>
       </div>
-      {payload.design ? (
-        <DesignCoverPage payload={payload} pageNo={pageNo++} />
+      {reportKind === "bridgeDesign" || reportKind === "roadDesign" ? (
+        <DesignCoverPage payload={payload} pageNo={pageNo++} designKey={reportKind === "roadDesign" ? "roadDesign" : "design"} />
       ) : (
         <ReportPage pageNo={pageNo++} className="cover-page">
           <div className="cover-k">
@@ -841,8 +956,11 @@ function Report({ project, onEdit, onPrint }) {
         </table>
       </ReportPage>
 
-      {payload.design && <DesignReportPages payload={payload} startPageNo={pageNo} />}
-      {payload.design ? (() => { pageNo += designPageCount; return null; })() : null}
+      {reportKind === "bridgeDesign" && <DesignReportPages payload={payload} startPageNo={pageNo} />}
+      {reportKind === "roadDesign" && <RoadDesignReportPages payload={payload} startPageNo={pageNo} />}
+      {reportKind === "road" && <RoadReportPages payload={payload} startPageNo={pageNo} />}
+      {reportKind === "bridge" && <BridgeReportPages payload={payload} startPageNo={pageNo} />}
+      {prefixPageCount ? (() => { pageNo += prefixPageCount; return null; })() : null}
 
       <ReportPage pageNo={pageNo++}>
         <ReportHeader payload={payload} />
@@ -980,8 +1098,8 @@ function EmptyReport() {
   return <section className="surface empty"><h2>Report</h2><p>Select or create a project to view report pages.</p></section>;
 }
 
-function DesignCoverPage({ payload, pageNo }) {
-  const cover = payload.design?.cover || {};
+function DesignCoverPage({ payload, pageNo, designKey = "design" }) {
+  const cover = payload[designKey]?.cover || {};
   return (
     <ReportPage pageNo={pageNo} className="design-cover-page">
       <div className="gov-cover">
@@ -998,6 +1116,123 @@ function DesignCoverPage({ payload, pageNo }) {
       </div>
     </ReportPage>
   );
+}
+
+function RoadDesignReportPages({ payload, startPageNo }) {
+  const design = payload.roadDesign || {};
+  return (
+    <>
+      <ReportPage pageNo={startPageNo} className="design-page">
+        <ReportHeader payload={payload} accent="Road Design" />
+        <h2 className="decorated-heading">Road Design Inputs</h2>
+        <DesignCover design={design} />
+        <SimpleTable rows={design.inputs || []} />
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 1} className="design-page">
+        <ReportHeader payload={payload} accent="Traffic" />
+        <h2 className="decorated-heading">Traffic Design Calculation</h2>
+        <SimpleTable rows={design.traffic || []} />
+        <FormulaBlocks blocks={design.trafficFormulaBlocks || []} />
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 2} landscape className="design-page">
+        <ReportHeader payload={payload} accent="Pavement" />
+        <h2 className="decorated-heading">Pavement Crust Design</h2>
+        <DesignTable headers={["Layer", "Thickness", "Material", "Remark"]} rows={(design.pavement || []).slice(1)} />
+        <FormulaBlocks blocks={design.pavementFormulaBlocks || []} />
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 3} className="design-page">
+        <ReportHeader payload={payload} accent="Geometry" />
+        <h2 className="decorated-heading">Geometric Design Statement</h2>
+        <SimpleTable rows={design.geometry || []} />
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 4} className="design-page">
+        <ReportHeader payload={payload} accent="Quantities" />
+        <h2 className="decorated-heading">Road Quantity Design Basis</h2>
+        <SimpleTable rows={design.quantityBasis || []} />
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 5} landscape className="design-page">
+        <ReportHeader payload={payload} accent="Drawing" />
+        <h2 className="decorated-heading">Key Plan & Alignment Drawing</h2>
+        <RoadSketch type="alignment" />
+        <ul className="design-notes">{(design.drawingNotes || []).map((note) => <li key={note}>{note}</li>)}</ul>
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 6} landscape className="design-page">
+        <ReportHeader payload={payload} accent="Drawing" />
+        <h2 className="decorated-heading">L-Section & Formation Profile</h2>
+        <RoadSketch type="profile" />
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 7} landscape className="design-page">
+        <ReportHeader payload={payload} accent="Drawing" />
+        <h2 className="decorated-heading">Typical Cross Section & Pavement Layers</h2>
+        <RoadSketch type="cross" />
+      </ReportPage>
+    </>
+  );
+}
+
+function RoadReportPages({ payload, startPageNo }) {
+  const rows = [
+    ["Road Type", payload.meta?.workType || "Road"],
+    ["Carriageway", "Flexible pavement road"],
+    ["Surface", "DBM / BC bituminous surface"],
+    ["Drainage", "Side drain and shoulder slope as per site"],
+  ];
+  const pavement = [
+    ["Subgrade preparation", "As per site CBR and compaction requirement"],
+    ["Granular sub-base", "GSB compacted layer"],
+    ["Base course", "Wet Mix Macadam"],
+    ["Binder/Wearing", "DBM / BC as applicable"],
+  ];
+  return (
+    <>
+      <ReportPage pageNo={startPageNo} className="design-page">
+        <ReportHeader payload={payload} accent="Road" />
+        <h2 className="decorated-heading">Road Technical Statement</h2>
+        <SimpleTable rows={rows} />
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 1} className="design-page">
+        <ReportHeader payload={payload} accent="Pavement" />
+        <h2 className="decorated-heading">Pavement Layer Statement</h2>
+        <SimpleTable rows={pavement} />
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 2} className="design-page">
+        <ReportHeader payload={payload} accent="Quantities" />
+        <h2 className="decorated-heading">Road Quantity Basis</h2>
+        <SimpleTable rows={(payload.roadDesign?.quantityBasis || roadQuantityBasisFallback())} />
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 3} landscape className="design-page">
+        <ReportHeader payload={payload} accent="Road Furniture" />
+        <h2 className="decorated-heading">Road Furniture & Safety Statement</h2>
+        <DesignTable headers={["Item", "Basis", "Remark"]} rows={[["Road markings", "Length as per center/edge line", "Thermoplastic / paint as applicable"], ["Sign boards", "As per junction and hazard locations", "Retro-reflective"], ["Shoulder", "Both sides", "Murum / compacted shoulder"], ["Drainage", "Low-lying stretches", "CC drain / earthen drain"]]} />
+      </ReportPage>
+    </>
+  );
+}
+
+function BridgeReportPages({ payload, startPageNo }) {
+  return (
+    <>
+      <ReportPage pageNo={startPageNo} className="design-page">
+        <ReportHeader payload={payload} accent="Bridge" />
+        <h2 className="decorated-heading">Bridge Technical Statement</h2>
+        <SimpleTable rows={[["Structure type", "Bridge / culvert estimate"], ["Foundation", "As per approved drawing and site strata"], ["Concrete", "PCC, RCC, protection and approach works"], ["Hydraulic note", "Use Bridge Design template when detailed hydraulic calculations are required"]]} />
+      </ReportPage>
+      <ReportPage pageNo={startPageNo + 1} landscape className="design-page">
+        <ReportHeader payload={payload} accent="Components" />
+        <h2 className="decorated-heading">Bridge Component Statement</h2>
+        <DesignTable headers={["Component", "Typical items", "Remark"]} rows={[["Substructure", "Foundation, abutment, pier, wing wall", "As per drawing"], ["Superstructure", "Deck slab, wearing coat, railing", "As per span arrangement"], ["Protection", "Apron, pitching, cutoff wall", "As per hydraulic requirement"], ["Approach", "GSB, WMM, bituminous layers", "Match existing road"]]} />
+      </ReportPage>
+    </>
+  );
+}
+
+function roadQuantityBasisFallback() {
+  return [
+    ["Earthwork", "Length x average width x depth"],
+    ["GSB", "Length x compacted width x thickness"],
+    ["WMM", "Length x compacted width x thickness"],
+    ["DBM / BC", "Length x carriageway width x thickness"],
+  ];
 }
 
 function DesignReportPages({ payload, startPageNo }) {
@@ -1108,12 +1343,15 @@ function FormulaBlocks({ blocks = [] }) {
   if (!blocks.length) return null;
   return (
     <div className="formula-grid">
-      {blocks.map((block, index) => (
-        <section className="formula-card" key={`${block.title}-${index}`}>
-          <h3>{block.title}</h3>
-          {(block.lines || []).map((line) => <code key={line}>{line}</code>)}
-        </section>
-      ))}
+      {blocks.map((block, index) => {
+        const lines = Array.isArray(block.lines) ? block.lines : String(block.lines || "").split(/ (?=[A-Z][A-Za-z ]*=|N =|Q =|Layer |Total )/).filter(Boolean);
+        return (
+          <section className="formula-card" key={`${block.title}-${index}`}>
+            <h3>{block.title}</h3>
+            {lines.map((line) => <code key={line}>{line}</code>)}
+          </section>
+        );
+      })}
     </div>
   );
 }
@@ -1144,6 +1382,42 @@ function LongSectionSketch() {
         <span key={point} style={{ left: `${5 + index * 9.5}%`, top: `${18 + index * 5}%` }}>{point}</span>
       ))}
       <b>Gradient = 0.0155</b>
+    </div>
+  );
+}
+
+function RoadSketch({ type }) {
+  return (
+    <div className={clsx("road-sketch", `road-sketch-${type}`)}>
+      {type === "alignment" && (
+        <>
+          <div className="road-centerline" />
+          <span className="chainage start">Ch. 0/000</span>
+          <span className="chainage end">Ch. 1/500</span>
+          <span className="road-label">Proposed flexible pavement alignment</span>
+          <span className="north-arrow">N</span>
+        </>
+      )}
+      {type === "profile" && (
+        <>
+          <div className="profile-ground" />
+          <div className="profile-formation" />
+          <span className="profile-label ground">Existing ground profile</span>
+          <span className="profile-label formation">Proposed formation level</span>
+        </>
+      )}
+      {type === "cross" && (
+        <>
+          <div className="cross-formation" />
+          <div className="cross-carriageway">3.75 m carriageway</div>
+          <div className="cross-shoulder left">Shoulder</div>
+          <div className="cross-shoulder right">Shoulder</div>
+          <div className="pavement-layer bc">BC 30 mm</div>
+          <div className="pavement-layer dbm">DBM 50 mm</div>
+          <div className="pavement-layer wmm">WMM 250 mm</div>
+          <div className="pavement-layer gsb">GSB 150 mm</div>
+        </>
+      )}
     </div>
   );
 }

@@ -89,6 +89,7 @@ button {
 
 .login-panel input,
 .field input,
+.field select,
 .field textarea,
 .rate-row input,
 .editable-estimate input,
@@ -148,11 +149,22 @@ button {
   min-height: 100vh;
   overflow: hidden;
   padding: 18px 12px;
-  position: sticky;
+  height: 100vh;
+  position: fixed;
   top: 0;
   transition: width 220ms ease, box-shadow 220ms ease;
   width: 74px;
   z-index: 30;
+}
+
+.sidebar nav,
+.brand {
+  flex-shrink: 0;
+}
+
+.sidebar nav {
+  position: sticky;
+  top: 84px;
 }
 
 .sidebar-expanded .sidebar {
@@ -209,6 +221,7 @@ button {
 }
 
 .workspace {
+  margin-left: 74px;
   min-width: 0;
   padding: 22px clamp(14px, 2vw, 28px);
 }
@@ -459,6 +472,18 @@ h2 {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
+.project-filters {
+  align-items: end;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(240px, 1fr) minmax(180px, 260px);
+  margin-bottom: 14px;
+}
+
+.project-search {
+  margin-bottom: 0;
+}
+
 .project-card {
   grid-template-columns: 1fr;
   position: relative;
@@ -501,6 +526,23 @@ h2 {
   font-weight: 900;
   margin-bottom: 5px;
   text-transform: uppercase;
+}
+
+.project-date-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.project-date-badges span {
+  background: #eef7fb;
+  border: 1px solid #cddcec;
+  border-radius: 999px;
+  color: #41546a;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 4px 7px;
 }
 
 .editor {
@@ -638,10 +680,6 @@ details[open] summary {
 .template-grid span {
   color: #8c5b2e;
   font-weight: 700;
-}
-
-.project-search {
-  margin-bottom: 14px;
 }
 
 .empty-search {
@@ -1110,7 +1148,8 @@ details[open] summary {
 }
 
 .bridge-sketch,
-.long-section {
+.long-section,
+.road-sketch {
   background: linear-gradient(#fff, #fbfdff);
   border: 1px solid #9fb0bf;
   height: 430px;
@@ -1118,6 +1157,114 @@ details[open] summary {
   overflow: hidden;
   position: relative;
 }
+
+.road-sketch {
+  height: 360px;
+}
+
+.road-centerline {
+  border-top: 7px double #142033;
+  left: 8%;
+  position: absolute;
+  right: 8%;
+  top: 52%;
+  transform: rotate(-7deg);
+}
+
+.chainage,
+.road-label,
+.north-arrow,
+.profile-label {
+  background: #fff;
+  color: #142033;
+  font-size: 0.8rem;
+  font-weight: 900;
+  padding: 4px 6px;
+  position: absolute;
+}
+
+.chainage.start { left: 8%; top: 58%; }
+.chainage.end { right: 8%; top: 40%; }
+.road-label { left: 35%; top: 30%; }
+.north-arrow {
+  border: 1px solid #142033;
+  border-radius: 999px;
+  right: 8%;
+  top: 8%;
+}
+
+.profile-ground,
+.profile-formation {
+  left: 7%;
+  position: absolute;
+  right: 7%;
+}
+
+.profile-ground {
+  border-top: 3px solid #687789;
+  top: 58%;
+  transform: rotate(-5deg);
+}
+
+.profile-formation {
+  border-top: 3px dashed #0f766e;
+  top: 45%;
+  transform: rotate(-2deg);
+}
+
+.profile-label.ground { left: 10%; top: 62%; }
+.profile-label.formation { right: 10%; top: 36%; }
+
+.cross-formation {
+  border-top: 3px solid #142033;
+  left: 10%;
+  position: absolute;
+  right: 10%;
+  top: 40%;
+}
+
+.cross-carriageway,
+.cross-shoulder,
+.pavement-layer {
+  align-items: center;
+  display: flex;
+  font-size: 0.78rem;
+  font-weight: 900;
+  justify-content: center;
+  position: absolute;
+}
+
+.cross-carriageway {
+  background: #e5edf6;
+  border: 1px solid #142033;
+  height: 42px;
+  left: 34%;
+  top: 31%;
+  width: 32%;
+}
+
+.cross-shoulder {
+  background: #f8fbff;
+  border: 1px solid #9fb0bf;
+  height: 34px;
+  top: 35%;
+  width: 20%;
+}
+
+.cross-shoulder.left { left: 14%; }
+.cross-shoulder.right { right: 14%; }
+
+.pavement-layer {
+  border: 1px solid #9fb0bf;
+  height: 28px;
+  left: 34%;
+  width: 32%;
+}
+
+.pavement-layer.bc { background: #eef7fb; top: 45%; }
+.pavement-layer.dbm { background: #f8fbff; top: 53%; }
+.pavement-layer.wmm { background: #fff7ed; top: 61%; }
+.pavement-layer.gsb { background: #f6f8fb; top: 69%; }
 
 .map-placeholder {
   align-items: center;
@@ -1316,6 +1463,7 @@ details[open] summary {
   }
 
   .workspace {
+    margin-left: 0;
     max-width: 100vw;
     overflow-x: hidden;
     padding: 14px 10px;
@@ -1363,6 +1511,10 @@ details[open] summary {
   .template-strip,
   .template-grid,
   .category-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .project-filters {
     grid-template-columns: 1fr;
   }
 
@@ -1632,6 +1784,10 @@ details[open] summary {
   }
 
   .long-section {
+    height: 275px;
+  }
+
+  .road-sketch {
     height: 275px;
   }
 
