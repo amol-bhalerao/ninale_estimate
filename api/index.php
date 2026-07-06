@@ -261,6 +261,8 @@ function designBridgeTemplate(): array
             'circle' => 'Public Works Circle, Dharashiv',
             'division' => 'Public Works Division, Dharashiv',
             'workName' => 'Improvement to SH-211 to Tawarajkheda Kond Padoli Borkhanda Road to SH-238 MDR-34',
+            'roadLine' => 'Km 3/00 to 21/00',
+            'partLine' => '(Part - Tawarajkheda to Mendha Pati and 21/00 to 36/900, Part Padoli to Bembli)',
             'location' => 'At Tawarajkheda, Taluka Dharashiv, District Dharashiv',
         ],
         'data' => [
@@ -270,57 +272,171 @@ function designBridgeTemplate(): array
             ['Bank Width', '18.00 m'],
             ['Angle of Skew', '0.00 degree'],
             ['Hydraulic Gradient', '0.0172'],
-            ['Rugosity Coefficient', '0.025'],
-            ['HFL', '703.30 m'],
-            ['LBL', '702.00 m'],
-            ['Flood Discharge', '11.73 Cumecs'],
+            ['Rugosity Coefficient', 'Bed = 0.035, Bank = 0.025'],
+            ['Silt Factor', '2.00'],
+            ['Lowest Bed Level', '702.00 m'],
+            ['H.F.L. R.L.', '703.30 m'],
+            ['Discharge by Inglis Formula', '724.27 Cusec / 20.53 Cumec'],
+            ['Discharge by Modified Inglis Formula', '413.87 Cusec / 11.73 Cumec'],
+            ['Mean Component Velocity at H.F.L.', '1.674 m/sec'],
+        ],
+        'dischargeFormulaBlocks' => [
+            [
+                'title' => 'I. Discharge by Inglis Formula',
+                'lines' => [
+                    'Q = (7000 x C.A.) / sqrt(C.A. + 4)',
+                    'C.A. = 0.21 Sq.mile',
+                    'Q = (7000 x 0.21) / sqrt(0.21 + 4)',
+                    'Q = 1486.49 / 2.052 = 724.267 Cusec',
+                    'Q = 20.53 Cumec',
+                ],
+            ],
+            [
+                'title' => 'II. Discharge by Modified Inglis Formula',
+                'lines' => [
+                    'C.A. = 0.55 Sq.Km. = 0.21 Sq.mile',
+                    'Q = (4000 x C.A.) / sqrt(C.A. + 4)',
+                    'Q = (4000 x 0.21) / sqrt(0.21 + 4)',
+                    'Q = 849.421 / 2.052 = 413.87 Cusec',
+                    'Q = 11.73 Cumec',
+                ],
+            ],
         ],
         'waterway' => [
             ['Flood Depth', 'HFL - LBL = 703.30 - 702.00 = 1.30 m'],
             ['Average Velocity', '3.87 m/sec'],
             ['Linear Waterway', '11.73 / (3.87 x 1.30) = 2.333 m'],
             ['Adopted Waterway', '3.00 m'],
-            ['Proposed Opening', '2 span of 2.00 m c/c RCC box cell bridge'],
+            ['Proposed Opening', '2 span of 2.00 m c/c RCC box cell bridge = 4.00 m'],
+        ],
+        'waterwayFormulaBlocks' => [
+            [
+                'title' => 'C. Linear Waterway Calculation',
+                'lines' => [
+                    'Flood Depth = HFL - LBL',
+                    'Flood Depth = 703.30 - 702.00 = 1.30 m',
+                    'Linear Waterway = Flood Discharge / (Average Velocity x Flood Depth)',
+                    'Linear Waterway = 11.73 / (3.87 x 1.30) = 2.333 m',
+                    'Adopted Linear Waterway = 3.00 m',
+                    'Provide 2 span of 2.00 m c/c RCC box cell bridge = 4.00 m opening',
+                ],
+            ],
         ],
         'gradient' => [
             ['0', '707.590', '-', '-', '-'],
             ['15', '707.120', '15.00', '0.470', '0.031'],
             ['60', '706.970', '45.00', '0.150', '0.003'],
+            ['90', '706.829', '30.00', '0.141', '0.005'],
             ['120', '706.522', '30.00', '0.307', '0.010'],
+            ['150', '705.140', '30.00', '1.382', '0.046'],
+            ['180', '705.050', '30.00', '0.090', '0.003'],
             ['210', '704.552', '30.00', '0.498', '0.017'],
+            ['240', '704.315', '30.00', '0.237', '0.008'],
+            ['270', '703.955', '30.00', '0.360', '0.012'],
+            ['300', '703.587', '30.00', '0.368', '0.012'],
             ['330', '702.690', '30.00', '0.897', '0.030'],
+            ['360', '702.250', '30.00', '0.440', '0.015'],
+            ['380', '701.810', '20.00', '0.440', '0.022'],
             ['420', '701.370', '40.00', '0.440', '0.011'],
+            ['430', '700.931', '10.00', '0.440', '0.044'],
+            ['460', '700.491', '30.00', '0.440', '0.015'],
+            ['490', '700.052', '30.00', '0.440', '0.015'],
+            ['520', '699.612', '30.00', '0.440', '0.015'],
+            ['550', '699.172', '30.00', '0.440', '0.015'],
+        ],
+        'gradientSummary' => [
+            ['Total fall', '6.659 m'],
+            ['Total length', '430.000 m'],
+            ['Hydraulic gradient S', '0.0172'],
+            ['Bed fall reference', '64.57'],
         ],
         'crossSection' => [
+            ['0', '704.650', '-', '-', 'Left bank'],
+            ['5', '704.590', '-', '-', 'Approach'],
+            ['7', '704.200', '-', '-', 'Approach'],
+            ['10', '704.750', '-', '-', 'Approach'],
+            ['15', '704.050', '-', '-', 'Approach'],
+            ['20', '703.900', '-', '-', 'Approach'],
+            ['30', '703.610', '-', '-', 'Approach'],
             ['31', '703.470', '703.30', '0.00', 'Comp I'],
             ['32', '702.880', '703.30', '0.42', 'Comp I'],
             ['33', '702.750', '703.30', '0.55', 'Comp II'],
             ['34', '702.180', '703.30', '1.12', 'Comp II'],
             ['35', '702.000', '703.30', '1.30', 'Comp II'],
+            ['36', '702.230', '703.30', '1.07', 'Comp II'],
             ['37', '702.420', '703.30', '0.88', 'Comp III'],
+            ['38', '702.562', '703.30', '0.74', 'Comp III'],
             ['39', '702.892', '703.30', '0.41', 'Comp III'],
+            ['40', '702.952', '703.30', '0.35', 'Comp III'],
+            ['41', '703.125', '703.30', '0.17', 'Comp III'],
+            ['42', '703.456', '-', '-', 'Right bank'],
+            ['45', '703.897', '-', '-', 'Right bank'],
+            ['60', '704.250', '-', '-', 'Right approach'],
+            ['75', '704.500', '-', '-', 'Right approach'],
+        ],
+        'crossSectionSummary' => [
+            ['Lowest Bed Level', '702.000'],
+            ['Waterway', '3.00 m'],
+            ['Discharge', '29.410 m3/sec'],
+            ['Velocity', '4.97 m/sec'],
         ],
         'compartmentI' => [
-            ['31', '703.47', '703.30', '0.00', '0.000'],
-            ['32', '702.88', '703.30', '0.42', '0.210'],
-            ['33', '702.75', '703.30', '0.55', '0.485'],
-            ['Mean / Total', '703.03', '-', '0.32', '0.695'],
+            ['31', '703.47', '703.30', '0.00', '-', '-', '-', '-'],
+            ['32', '702.88', '703.30', '0.42', '0.210', '1.00', '0.210', '0.000'],
+            ['33', '702.75', '703.30', '0.55', '0.485', '1.00', '0.485', '1.010'],
+            ['Mean / Total', '703.03', '-', '0.32', '-', '2.00', '0.695', '1.010'],
         ],
         'compartmentII' => [
-            ['33', '702.75', '703.30', '0.55', '0.550'],
-            ['34', '702.18', '703.30', '1.12', '0.830'],
-            ['35', '702.00', '703.30', '1.30', '1.210'],
-            ['36', '702.23', '703.30', '1.07', '1.180'],
-            ['37', '702.42', '703.30', '0.88', '0.970'],
-            ['Total', '702.32', '-', '0.98', '4.200'],
+            ['33', '702.75', '703.30', '0.55', '-', '-', '-', '-'],
+            ['34', '702.18', '703.30', '1.12', '0.830', '1.00', '0.830', '1.150'],
+            ['35', '702.00', '703.30', '1.30', '1.210', '1.00', '1.210', '1.020'],
+            ['36', '702.23', '703.30', '1.07', '1.180', '1.00', '1.180', '1.030'],
+            ['37', '702.42', '703.30', '0.88', '0.970', '1.00', '0.970', '1.020'],
+            ['Total', '702.32', '-', '0.98', '-', '4.00', '4.200', '4.210'],
         ],
         'compartmentIII' => [
-            ['37', '702.42', '703.30', '0.88', '0.810'],
-            ['38', '702.56', '703.30', '0.74', '0.810'],
-            ['39', '702.89', '703.30', '0.41', '0.580'],
-            ['40', '702.95', '703.30', '0.35', '0.380'],
-            ['41', '703.12', '703.30', '0.18', '0.180'],
-            ['Total', '702.88', '-', '0.51', '2.110'],
+            ['37', '702.42', '703.30', '0.88', '-', '-', '-', '-'],
+            ['38', '702.56', '703.30', '0.74', '0.810', '1.00', '0.810', '1.010'],
+            ['39', '702.89', '703.30', '0.41', '0.570', '1.00', '0.570', '1.050'],
+            ['40', '702.95', '703.30', '0.35', '0.380', '1.00', '0.380', '1.000'],
+            ['41', '703.13', '703.30', '0.17', '0.260', '1.00', '0.260', '1.010'],
+            ['42', '703.46', '703.30', '0.00', '0.090', '1.00', '0.090', '1.050'],
+            ['Total', '702.90', '-', '0.42', '-', '1.00', '2.110', '5.130'],
+        ],
+        'compartmentFormulaBlocks' => [
+            'I' => [
+                'title' => 'Compartment I Velocity and Discharge',
+                'lines' => [
+                    'Bed fall = 64.57; bed gradient S = 0.0172',
+                    'Area A = 0.695; wetted perimeter P = 1.01; n = 0.0250',
+                    'Hydraulic mean depth R = A / P = 0.695 / 1.01 = 0.6892',
+                    'Mean velocity V = R^(2/3) / (n x sqrt(S))',
+                    'V = 0.780 / (0.0250 x 8.036) = 3.88 m/sec',
+                    'Flood discharge Q = A x V = 0.695 x 3.88 = 2.70 m3/sec',
+                ],
+            ],
+            'II' => [
+                'title' => 'Compartment II Velocity and Discharge',
+                'lines' => [
+                    'Bed fall = 64.57; bed gradient S = 0.0172',
+                    'Area A = 4.20; wetted perimeter P = 4.21; n = 0.025',
+                    'Hydraulic mean depth R = A / P = 4.20 / 4.21 = 1.00',
+                    'Mean velocity V = R^(2/3) / (n x sqrt(S))',
+                    'V = 0.999 / (0.025 x 8.04) = 4.973 m/sec',
+                    'Flood discharge Q = A x V = 4.20 x 4.973 = 20.91 m3/sec',
+                ],
+            ],
+            'III' => [
+                'title' => 'Compartment III Velocity and Discharge',
+                'lines' => [
+                    'Bed fall = 64.57; bed gradient S = 0.0172',
+                    'Area A = 2.11; wetted perimeter P = 5.13; n = 0.025',
+                    'Hydraulic mean depth R = A / P = 2.11 / 5.13 = 0.411',
+                    'Mean velocity V = R^(2/3) / (n x sqrt(S))',
+                    'V = 0.553 / (0.025 x 8.04) = 2.750 m/sec',
+                    'Flood discharge Q = A x V = 2.11 x 2.750 = 5.80 m3/sec',
+                ],
+            ],
         ],
         'discharge' => [
             ['Compartment I', '2.699', '3.883', '0.695'],
@@ -539,6 +655,18 @@ function projectPayload(array $body, ?array $base = null): array
     if (!is_array($payload)) {
         $payload = emptyTemplate('Bridge');
     }
+    return enrichDesignPayload($payload);
+}
+
+function enrichDesignPayload(array $payload): array
+{
+    $workType = $payload['meta']['workType'] ?? '';
+    if ($workType !== 'Bridge Design' && empty($payload['design'])) {
+        return $payload;
+    }
+
+    $default = designBridgeTemplate();
+    $payload['design'] = array_replace_recursive($default['design'], $payload['design'] ?? []);
     return $payload;
 }
 
@@ -558,7 +686,7 @@ try {
     if ($path === 'templates' && $method === 'GET') {
         $rows = $pdo->query('SELECT id, name, work_type, description, payload FROM templates ORDER BY id')->fetchAll();
         foreach ($rows as &$row) {
-            $row['payload'] = json_decode($row['payload'], true);
+            $row['payload'] = enrichDesignPayload(json_decode($row['payload'], true) ?: []);
         }
         respond($rows);
     }
@@ -590,7 +718,7 @@ try {
     if ($path === 'projects' && $method === 'GET') {
         $rows = $pdo->query('SELECT id, name, work_type, template_id, payload, created_at, updated_at FROM projects ORDER BY updated_at DESC')->fetchAll();
         foreach ($rows as &$row) {
-            $row['payload'] = json_decode($row['payload'], true);
+            $row['payload'] = enrichDesignPayload(json_decode($row['payload'], true) ?: []);
         }
         respond($rows);
     }

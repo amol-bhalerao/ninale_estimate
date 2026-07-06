@@ -1065,6 +1065,40 @@ details[open] summary {
   font-size: 0.72rem;
 }
 
+.formula-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  margin: 12px 0;
+}
+
+.formula-card {
+  background: #fbfdff;
+  border: 1px solid #cddcec;
+  border-radius: 12px;
+  display: grid;
+  gap: 5px;
+  padding: 10px 12px;
+}
+
+.formula-card h3 {
+  color: #142033;
+  font-size: 0.82rem;
+  margin: 0 0 3px;
+}
+
+.formula-card code {
+  background: #fff;
+  border-left: 3px solid #b7d9d3;
+  color: #243447;
+  display: block;
+  font-family: "Roboto Mono", ui-monospace, Consolas, monospace;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  padding: 4px 7px;
+  white-space: normal;
+}
+
 .design-notes {
   border: 1px solid #cddcec;
   margin: 12px 0 0;
@@ -1565,6 +1599,32 @@ details[open] summary {
 
   .design-page .simple-table {
     font-size: 0.56rem;
+  }
+
+  .formula-grid {
+    gap: 6px;
+    margin: 7px 0;
+  }
+
+  .formula-card {
+    border-radius: 0;
+    padding: 6px 8px;
+  }
+
+  .formula-card h3 {
+    font-size: 0.68rem;
+  }
+
+  .formula-card code {
+    background: #fff !important;
+    border-left: 2px solid #cddcec;
+    font-size: 0.48rem;
+    line-height: 1.28;
+    padding: 2px 5px;
+  }
+
+  .compartment-page .design-table {
+    font-size: 0.5rem;
   }
 
   .bridge-sketch {

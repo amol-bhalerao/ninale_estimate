@@ -991,6 +991,8 @@ function DesignCoverPage({ payload, pageNo }) {
         <span>{cover.division}</span>
         <h1>Estimate</h1>
         <p><b>Name of Work :</b> {cover.workName || payload.meta.title}</p>
+        {cover.roadLine && <p>{cover.roadLine}</p>}
+        {cover.partLine && <p>{cover.partLine}</p>}
         <p>{cover.location || payload.meta.subtitle}</p>
         <footer>{payload.meta.preparedBy}<br />{payload.meta.division}</footer>
       </div>
@@ -1004,14 +1006,16 @@ function DesignReportPages({ payload, startPageNo }) {
     <>
       <ReportPage pageNo={startPageNo} className="design-page">
         <ReportHeader payload={payload} accent="Design" />
-        <h2 className="decorated-heading">Design Data</h2>
+        <h2 className="decorated-heading">Design Data & Discharge Formula</h2>
         <DesignCover design={design} />
         <SimpleTable rows={design.data || []} />
+        <FormulaBlocks blocks={design.dischargeFormulaBlocks || []} />
       </ReportPage>
       <ReportPage pageNo={startPageNo + 1} className="design-page">
         <ReportHeader payload={payload} accent="Hydraulic" />
         <h2 className="decorated-heading">Linear Waterway Calculation</h2>
         <SimpleTable rows={design.waterway || []} />
+        <FormulaBlocks blocks={design.waterwayFormulaBlocks || []} />
         <h2 className="decorated-heading compact-heading">Hydraulic Gradient</h2>
         <DesignTable headers={["CH", "Bed Level", "Length", "Diff.", "Gradient"]} rows={design.gradient || []} />
       </ReportPage>
@@ -1019,28 +1023,17 @@ function DesignReportPages({ payload, startPageNo }) {
         <ReportHeader payload={payload} accent="Gradient" />
         <h2 className="decorated-heading">Hydraulic Gradient Calculation</h2>
         <DesignTable headers={["CH", "Bed Level", "Length", "Diff.", "Gradient"]} rows={design.gradient || []} />
-        <SimpleTable rows={[["Bed Gradient Adopted", "0.0172"], ["Reference Chainage", "0 m to 420 m"], ["Remark", "Adopted as per hydraulic statement"]]} />
+        <SimpleTable rows={design.gradientSummary || [["Bed Gradient Adopted", "0.0172"], ["Reference Chainage", "0 m to 420 m"], ["Remark", "Adopted as per hydraulic statement"]]} />
       </ReportPage>
       <ReportPage pageNo={startPageNo + 3} landscape className="design-page">
         <ReportHeader payload={payload} accent="Cross Section" />
         <h2 className="decorated-heading">Defined Cross Section & Site of Crossing</h2>
         <DesignTable headers={["Chainage", "Ground Level", "HFL", "Depth", "Compartment"]} rows={design.crossSection || []} />
+        <SimpleTable rows={design.crossSectionSummary || []} />
       </ReportPage>
-      <ReportPage pageNo={startPageNo + 4} className="design-page">
-        <ReportHeader payload={payload} accent="Comp I" />
-        <h2 className="decorated-heading">Compartment I Calculation</h2>
-        <DesignTable headers={["CH", "Bed", "HFL", "Depth", "Area"]} rows={design.compartmentI || []} />
-      </ReportPage>
-      <ReportPage pageNo={startPageNo + 5} className="design-page">
-        <ReportHeader payload={payload} accent="Comp II" />
-        <h2 className="decorated-heading">Compartment II Calculation</h2>
-        <DesignTable headers={["CH", "Bed", "HFL", "Depth", "Area"]} rows={design.compartmentII || []} />
-      </ReportPage>
-      <ReportPage pageNo={startPageNo + 6} className="design-page">
-        <ReportHeader payload={payload} accent="Comp III" />
-        <h2 className="decorated-heading">Compartment III Calculation</h2>
-        <DesignTable headers={["CH", "Bed", "HFL", "Depth", "Area"]} rows={design.compartmentIII || []} />
-      </ReportPage>
+      <CompartmentPage payload={payload} pageNo={startPageNo + 4} accent="Comp I" title="Compartment I Calculation" rows={design.compartmentI || []} formula={design.compartmentFormulaBlocks?.I} />
+      <CompartmentPage payload={payload} pageNo={startPageNo + 5} accent="Comp II" title="Compartment II Calculation" rows={design.compartmentII || []} formula={design.compartmentFormulaBlocks?.II} />
+      <CompartmentPage payload={payload} pageNo={startPageNo + 6} accent="Comp III" title="Compartment III Calculation" rows={design.compartmentIII || []} formula={design.compartmentFormulaBlocks?.III} />
       <ReportPage pageNo={startPageNo + 7} className="design-page">
         <ReportHeader payload={payload} accent="Discharge" />
         <h2 className="decorated-heading compact-heading">Discharge Check</h2>
@@ -1074,6 +1067,17 @@ function DesignReportPages({ payload, startPageNo }) {
   );
 }
 
+function CompartmentPage({ payload, pageNo, accent, title, rows, formula }) {
+  return (
+    <ReportPage pageNo={pageNo} className="design-page compartment-page">
+      <ReportHeader payload={payload} accent={accent} />
+      <h2 className="decorated-heading">{title}</h2>
+      <DesignTable headers={["CH", "Bed/GL", "HFL", "Depth", "Mean", "Length", "Area", "Wetted P"]} rows={rows} />
+      <FormulaBlocks blocks={formula ? [formula] : []} />
+    </ReportPage>
+  );
+}
+
 function DesignCover({ design }) {
   return (
     <div className="design-cover">
@@ -1082,6 +1086,8 @@ function DesignCover({ design }) {
       <span>{design.cover?.circle}</span>
       <span>{design.cover?.division}</span>
       <p>{design.cover?.workName}</p>
+      {design.cover?.roadLine && <small>{design.cover.roadLine}</small>}
+      {design.cover?.partLine && <small>{design.cover.partLine}</small>}
       <small>{design.cover?.location}</small>
     </div>
   );
@@ -1095,6 +1101,20 @@ function DesignTable({ headers, rows = [] }) {
         {rows.map((row, index) => <tr key={index}>{row.map((cell, cellIndex) => <td key={cellIndex}>{cell}</td>)}</tr>)}
       </tbody>
     </table>
+  );
+}
+
+function FormulaBlocks({ blocks = [] }) {
+  if (!blocks.length) return null;
+  return (
+    <div className="formula-grid">
+      {blocks.map((block, index) => (
+        <section className="formula-card" key={`${block.title}-${index}`}>
+          <h3>{block.title}</h3>
+          {(block.lines || []).map((line) => <code key={line}>{line}</code>)}
+        </section>
+      ))}
+    </div>
   );
 }
 
