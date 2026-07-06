@@ -878,8 +878,8 @@ function Report({ project, onEdit, onPrint }) {
   const abstractPages = chunk(totals.computedItems, 8);
   const ratePages = chunk(totals.computedItems, 2);
   const workType = payload.meta?.workType || project.work_type || "";
-  const reportKind = payload.design ? "bridgeDesign" : payload.roadDesign ? "roadDesign" : workType === "Road" ? "road" : workType === "Bridge" ? "bridge" : "standard";
-  const prefixPageCount = reportKind === "bridgeDesign" ? 13 : reportKind === "roadDesign" ? 8 : reportKind === "road" ? 4 : reportKind === "bridge" ? 2 : 0;
+  const reportKind = payload.gcmDesign ? "gcm" : payload.design ? "bridgeDesign" : payload.roadDesign ? "roadDesign" : workType === "Road" ? "road" : workType === "Bridge" ? "bridge" : "standard";
+  const prefixPageCount = reportKind === "gcm" ? 30 : reportKind === "bridgeDesign" ? 13 : reportKind === "roadDesign" ? 8 : reportKind === "road" ? 4 : reportKind === "bridge" ? 2 : 0;
   let pageNo = 1;
   const sections = [
     ["Cover", 1],
@@ -898,6 +898,38 @@ function Report({ project, onEdit, onPrint }) {
       ["Bridge Site Section", 13],
       ["Define Cross Section Drawing", 14],
       ["L-section Drawing", 15],
+    ] : []),
+    ...(reportKind === "gcm" ? [
+      ["Geographical Information & Lead Chart", 3],
+      ["Survey & Investigation", 4],
+      ["Fund Head Sheet", 5],
+      ["General Report", 6],
+      ["Certificate", 7],
+      ["Rainfall Data", 8],
+      ["Principal Features", 9],
+      ["Yield Calculation", 10],
+      ["Capacity Table", 11],
+      ["Bed Fall / Gradient", 12],
+      ["HFL Calculation at FTL", 13],
+      ["HFL Calculation at MWL", 14],
+      ["Afflux Calculation", 15],
+      ["Discharge Calculation", 16],
+      ["Hydraulic Jump & Apron", 17],
+      ["Design of Weir Body Wall", 18],
+      ["Stability Check", 19],
+      ["Wing & Abutment Wall", 20],
+      ["B.C. Ratio", 21],
+      ["Water Requirement", 22],
+      ["Annual Cost", 23],
+      ["Crop Pattern & Produce", 24],
+      ["ERR Calculation", 25],
+      ["GCM General Abstract", 26],
+      ["Measurement Statement", 27],
+      ["Nalla Deepening & Lead Chart", 28],
+      ["GCM Rate Analysis Summary", 29],
+      ["Drawing Index", 30],
+      ["Compliance Form I", 31],
+      ["Compliance Form II", 32],
     ] : []),
     ...(reportKind === "roadDesign" ? [
       ["Road Design Inputs", 3],
@@ -932,8 +964,8 @@ function Report({ project, onEdit, onPrint }) {
         <button onClick={onEdit}><Settings2 size={16} /> Edit project values</button>
         <button onClick={onPrint}><Printer size={16} /> Print current report</button>
       </div>
-      {reportKind === "bridgeDesign" || reportKind === "roadDesign" ? (
-        <DesignCoverPage payload={payload} pageNo={pageNo++} designKey={reportKind === "roadDesign" ? "roadDesign" : "design"} />
+      {reportKind === "bridgeDesign" || reportKind === "roadDesign" || reportKind === "gcm" ? (
+        <DesignCoverPage payload={payload} pageNo={pageNo++} designKey={reportKind === "roadDesign" ? "roadDesign" : reportKind === "gcm" ? "gcmDesign" : "design"} />
       ) : (
         <ReportPage pageNo={pageNo++} className="cover-page">
           <div className="cover-k">
@@ -962,6 +994,7 @@ function Report({ project, onEdit, onPrint }) {
       </ReportPage>
 
       {reportKind === "bridgeDesign" && <DesignReportPages payload={payload} startPageNo={pageNo} />}
+      {reportKind === "gcm" && <GcmReportPages payload={payload} startPageNo={pageNo} />}
       {reportKind === "roadDesign" && <RoadDesignReportPages payload={payload} startPageNo={pageNo} />}
       {reportKind === "road" && <RoadReportPages payload={payload} startPageNo={pageNo} />}
       {reportKind === "bridge" && <BridgeReportPages payload={payload} startPageNo={pageNo} />}
@@ -1238,6 +1271,206 @@ function roadQuantityBasisFallback() {
     ["WMM", "Length x compacted width x thickness"],
     ["DBM / BC", "Length x carriageway width x thickness"],
   ];
+}
+
+function GcmReportPages({ payload, startPageNo }) {
+  const gcm = payload.gcmDesign || {};
+  const totals = calculate(payload);
+  const page = (offset, title, children, options = {}) => (
+    <ReportPage pageNo={startPageNo + offset} landscape={options.landscape} className={clsx("design-page", "gcm-page", options.className)}>
+      <ReportHeader payload={payload} accent={options.accent || "GCM"} />
+      <h2 className="decorated-heading">{title}</h2>
+      {children}
+      <SignatureBlock payload={payload} />
+    </ReportPage>
+  );
+
+  return (
+    <>
+      {page(0, "Geographical Information & Lead Chart", (
+        <div className="gcm-two-col">
+          <section>
+            <h3>Geographical Information</h3>
+            <SimpleTable rows={gcm.geography || []} />
+          </section>
+          <section>
+            <h3>Lead Chart</h3>
+            <DesignTable headers={["Material", "Place", "Km", "Rate / Unit"]} rows={(payload.leadStatement || []).map((row) => [row.material, row.source, row.distanceKm, `${row.leadCharge} / ${row.unit}`])} />
+          </section>
+        </div>
+      ), { landscape: true, accent: "GCM Data" })}
+
+      {page(1, "Survey & Investigation", (
+        <>
+          <DesignTable headers={["CH", "Avg GL", "Below", "Always", "SS/HM", "SR/HR"]} rows={gcm.survey || []} />
+          <SimpleTable rows={gcm.siteData || []} />
+        </>
+      ), { landscape: true, accent: "Survey" })}
+
+      {page(2, "Fund Head Sheet", (
+        <div className="gcm-form-page">
+          <p><b>Executive Engineer:</b> {payload.meta.division}</p>
+          <p><b>Estimate framed in the office of:</b> Executive Engineer, {payload.meta.division}</p>
+          <p>For probable expenses that will be incurred for the work <b>{payload.meta.title}</b>.</p>
+          <p><b>Amounting Rs.</b> {currency(totals.tenderAmount)}</p>
+          <p><b>Sanctioned Estimate No.:</b> ____________________</p>
+          <p><b>Fund Head:</b> ____________________</p>
+          <p><b>Major Head / Minor Head:</b> ____________________</p>
+          <p><b>Estimate prepared by:</b> Section Engineer</p>
+          <p><b>Checked by:</b> Junior Engineer / Deputy Engineer</p>
+        </div>
+      ), { accent: "Fund Head" })}
+
+      {page(3, "General Report", (
+        <div className="gcm-report-text">
+          <h3>Hydrology</h3>
+          <p>Catchment area at the site is 2.07 Sq.Mile. Average mansoon rainfall is 24.60 inch and 50% dependable rainfall is 24.66 inch.</p>
+          <h3>General Description and History of Project</h3>
+          <p>There is continuous demand for this weir from local villagers. The site of concrete storage bandhara is proposed near Gandheli, Taluka Chhatrapati Sambhajinagar. Hard rock foundation is available below about 2.50 m and nalla bed width is 20.00 m.</p>
+          <h3>Construction Material & Leads</h3>
+          <p>Cement and steel from Chhatrapati Sambhajinagar, stone and metal from Ekod Pachod, sand from Paithan and soil from local source as per lead chart.</p>
+          <h3>Conclusion</h3>
+          <p>The scheme impounds 46.32 TCM storage and helps irrigation and drinking water availability. Cost per TCM is within prescribed economical norms, hence the scheme is recommended for approval.</p>
+        </div>
+      ), { accent: "Report" })}
+
+      {page(4, "Certificate", (
+        <ol className="gcm-certificate">
+          <li>I have personally checked center line levels and found correct.</li>
+          <li>I have verified the catchment area and location shown in the index map.</li>
+          <li>I have verified surveyed contour area shown on capacity table from capacity contour map.</li>
+          <li>I have verified trial pit results and correctness of strata before submitting plans and estimate.</li>
+          <li>I have verified leads of construction material and sufficient quantities are available in proposed leads.</li>
+          <li>Certified that 100% mathematical check is exercised in this office.</li>
+          <li>Certified that proposed scheme is not implemented from another agency or fund.</li>
+        </ol>
+      ), { accent: "Certificate" })}
+
+      {page(5, "Rainfall Data", (
+        <>
+          <DesignTable headers={["Year", "Rainfall mm", "Descending Year", "Rainfall mm"]} rows={gcm.rainfall || []} />
+          <SimpleTable rows={gcm.rainfallSummary || []} />
+        </>
+      ), { landscape: true, accent: "Rainfall" })}
+
+      {page(6, "Principal Features", <SimpleTable rows={gcm.features || []} />, { accent: "Features" })}
+      {page(7, "Yield Calculation", <SimpleTable rows={gcm.yield || []} />, { accent: "Yield" })}
+
+      {page(8, "Capacity Table", (
+        <DesignTable headers={["Reduced Level", "Area 1000 Sqm", "Successive Cap. TCM", "Cap. Mcft", "Remark"]} rows={gcm.capacity || []} />
+      ), { landscape: true, accent: "Capacity" })}
+
+      {page(9, "Bed Fall / Gradient Calculation", (
+        <>
+          <DesignTable headers={["Chainage", "NBL", "Difference"]} rows={gcm.gradient || []} />
+          <SimpleTable rows={(gcm.hydraulicSummary || []).slice(0, 2)} />
+        </>
+      ), { landscape: true, accent: "Gradient" })}
+
+      {page(10, "HFL Calculation on Proposed Site - FTL 100.00", (
+        <>
+          <DesignTable headers={["Ch", "GL", "HFL", "Height", "Area"]} rows={gcm.hfl || []} />
+          <FormulaBlocks blocks={(gcm.formulaBlocks || []).slice(0, 1)} />
+        </>
+      ), { landscape: true, accent: "HFL" })}
+
+      {page(11, "HFL Calculation on Proposed Site - MWL 100.90", (
+        <DesignTable headers={["Ch", "GL", "MWL", "Height", "Area"]} rows={gcm.mwl || []} />
+      ), { landscape: true, accent: "MWL" })}
+
+      {page(12, "Afflux Calculation", <FormulaBlocks blocks={(gcm.formulaBlocks || []).slice(2, 3)} />, { accent: "Afflux" })}
+      {page(13, "Discharge Calculation", <FormulaBlocks blocks={(gcm.formulaBlocks || []).slice(1, 2)} />, { accent: "Discharge" })}
+
+      {page(14, "Hydraulic Jump & Apron", (
+        <SimpleTable rows={[["Hydraulic jump", "h1 = 0.90 x (H)^(1/3) x (h)^(1/2)"], ["Apron required", "2.74 m"], ["Apron provided", "3.10 m"], ["Result", "Provided apron is adequate as per design"]]} />
+      ), { accent: "Apron" })}
+
+      {page(15, "Design of Weir Body Wall", (
+        <>
+          <SimpleTable rows={gcm.weirAssumptions || []} />
+          <GcmWeirSketch />
+        </>
+      ), { landscape: true, accent: "Weir Design" })}
+
+      {page(16, "Stability Check", <DesignTable headers={["Particular", "Value", "Remark"]} rows={gcm.stability || []} />, { accent: "Stability" })}
+
+      {page(17, "Wing & Abutment Wall", (
+        <SimpleTable rows={[["Top width", "0.60 m"], ["Foundation depth", "3.10 m"], ["Abutment eccentricity", "0.50 m"], ["Result", "Within permissible limit"]]} />
+      ), { accent: "Abutment" })}
+
+      {page(18, "Benefit Cost Ratio Calculation", (
+        <>
+          <SimpleTable rows={gcm.bcr || []} />
+          <DesignTable headers={["Crop", "% Age", "Benefit per Hect"]} rows={gcm.cropPattern || []} />
+        </>
+      ), { landscape: true, accent: "BCR" })}
+
+      {page(19, "Water Requirement Statement", (
+        <DesignTable headers={["Crop", "% Age", "Area", "Water Requirement Basis"]} rows={(gcm.cropPattern || []).filter((row) => row[0] !== "Total").map((row) => [row[0], row[1], "12.00 Ha proportionate", "Modified Penman method"])} />
+      ), { landscape: true, accent: "Water" })}
+
+      {page(20, "Annual Cost Calculation", <SimpleTable rows={[["Irrigable area", "12.00 Hect"], ["Cropping pattern", "Attached"], ["Cost of project", `Rs. ${currency(totals.tenderAmount)}`], ["Annual O&M", "As per WCD norms"], ["Annual cost", "Rs. 1329.00 thousand"]]} />, { accent: "Annual Cost" })}
+
+      {page(21, "Crop Pattern & Produce Statements", (
+        <DesignTable headers={["Crop", "% Age", "Benefit per Hect"]} rows={gcm.cropPattern || []} />
+      ), { landscape: true, accent: "Produce" })}
+
+      {page(22, "ERR Calculation", <SimpleTable rows={gcm.err || []} />, { accent: "ERR" })}
+
+      {page(23, "GCM General Abstract", <DesignTable headers={["Particular", "Amount Rs."]} rows={gcm.generalAbstract || []} />, { accent: "Abstract" })}
+
+      {page(24, "Measurement Statement", (
+        <DesignTable headers={["Group", "Measurement Basis"]} rows={gcm.measurementGroups || []} />
+      ), { landscape: true, accent: "Measurement" })}
+
+      {page(25, "Nalla Deepening & Lead Chart", (
+        <div className="gcm-two-col">
+          <section>
+            <h3>Nalla Deepening</h3>
+            <SimpleTable rows={[["Soft strata slope", "0.25 : 1"], ["Hard murum slope", "0.50 : 1"], ["Hard rock slope", "0 : 1"], ["TBL", "101.50"], ["MWL", "100.90"], ["FTL", "100.00"]]} />
+          </section>
+          <section>
+            <h3>Lead Certificate</h3>
+            <p>Certified that no construction material is available at lesser distance than shown leads and sufficient good quality material is available in shown quarry.</p>
+          </section>
+        </div>
+      ), { landscape: true, accent: "Lead" })}
+
+      {page(26, "GCM Rate Analysis Summary", (
+        <DesignTable headers={["Item", "Rate", "Unit", "Basis"]} rows={(payload.items || []).map((item) => [`Item ${item.itemNo}`, currency(item.rate), item.unit, item.analysis?.[0]?.particular || "WCD CSR / RSR"])} />
+      ), { landscape: true, accent: "Rates" })}
+
+      {page(27, "Drawing Index", (
+        <>
+          <DesignTable headers={["Sheet", "Drawing", "Status"]} rows={gcm.drawingSheets || []} />
+          <GcmWeirSketch />
+        </>
+      ), { landscape: true, accent: "Drawings" })}
+
+      {page(28, "Compliance Form I", (
+        <DesignTable headers={["Sr.", "Compliance Item", "Value"]} rows={(gcm.compliance || []).slice(0, 7).map((row, index) => [index + 1, row[0], row[1]])} />
+      ), { landscape: true, accent: "Compliance" })}
+
+      {page(29, "Compliance Form II", (
+        <DesignTable headers={["Sr.", "Compliance Item", "Value"]} rows={(gcm.compliance || []).slice(7).map((row, index) => [index + 8, row[0], row[1]])} />
+      ), { landscape: true, accent: "Compliance" })}
+    </>
+  );
+}
+
+function GcmWeirSketch() {
+  return (
+    <div className="gcm-weir-sketch">
+      <div className="gcm-tbl">TBL 101.50</div>
+      <div className="gcm-mwl">MWL 100.90</div>
+      <div className="gcm-ftl">FTL 100.00</div>
+      <div className="gcm-body">Weir Body<br />Top 0.60 m<br />Height 5.60 m</div>
+      <div className="gcm-foundation">Foundation RL 94.40</div>
+      <div className="gcm-apron upstream">U/S apron 3.10 m</div>
+      <div className="gcm-apron downstream">D/S apron 3.10 m</div>
+      <div className="gcm-keywall">Key wall 4.50 m</div>
+    </div>
+  );
 }
 
 function DesignReportPages({ payload, startPageNo }) {

@@ -132,6 +132,12 @@ function seedTemplates(PDO $pdo): void
             'payload' => workTemplate('Kolhapuri Bandhara', 'Construction of Kolhapuri Type Bandhara', 'Storage weir with gated bays and river training works', 12800000, ['Cutoff excavation', 'M15 foundation concrete', 'UCR masonry', 'RCC piers', 'Needle gates', 'Stone pitching']),
         ],
         [
+            'name' => 'GCM Gandheli Gated Cement Bandhara Template',
+            'work_type' => 'GCM',
+            'description' => 'Gated Cement Bandhara report template based on Gandheli No.1 with geography, lead chart, rainfall, yield, capacity, HFL, afflux, discharge, stability, BCR, ERR, abstract, measurement and compliance pages.',
+            'payload' => gcmTemplate(),
+        ],
+        [
             'name' => 'Building RCC Frame Template',
             'work_type' => 'Building',
             'description' => 'Building estimate with excavation, PCC, RCC frame, masonry, plaster, flooring, waterproofing, painting and services.',
@@ -341,6 +347,313 @@ function roadDesignTemplate(): array
             'Attach CAD/GIS exported key plan, alignment plan, L-section, cross sections and pavement crust details for final report.',
             'Current drawings are schematic placeholders until project-specific CAD/GIS images are uploaded.',
             'Pavement layer and traffic formula values are editable through the road design template payload.',
+        ],
+    ];
+
+    return $payload;
+}
+
+function gcmTemplate(): array
+{
+    $payload = workTemplate(
+        'GCM',
+        'Gated Cement Bandhara No. 1 at Gandheli',
+        'Taluka Chhatrapati Sambhajinagar, District Chhatrapati Sambhajinagar',
+        7970290,
+        [
+            'Excavation in all kinds of soil',
+            'Excavation in hard murum',
+            'Excavation in soft rock without blasting',
+            'Excavation in hard rock by blasting',
+            'M15 concrete for weir, abutment, pier and key wall',
+            'HYSD/TMT reinforcement for RCC work',
+            'M.S. sill beam ISWB-150',
+            'M.S. vertical channel 150 x 100 mm',
+            'Mild steel needle gate 2120 x 500 mm',
+            'Back filling behind structure',
+            'Dry rubble pitching 300 mm thick',
+            'Rubble soling below foundation',
+            'Canal information board',
+            'Royalty and statutory provisions',
+        ]
+    );
+
+    $payload['meta'] = [
+        'workType' => 'GCM',
+        'title' => 'Gated Cement Bandhara No. 1 at Gandheli',
+        'subtitle' => 'Taluka Chhatrapati Sambhajinagar, District Chhatrapati Sambhajinagar',
+        'division' => 'Soil & W. C. Division, Chhatrapati Sambhajinagar',
+        'subdivision' => 'Soil & W. C. Sub Division, Chhatrapati Sambhajinagar',
+        'preparedBy' => 'Executive Engineer',
+    ];
+
+    $payload['items'] = gcmItems();
+    $payload['leadStatement'] = [
+        ['material' => 'Cement', 'distanceKm' => 11, 'source' => 'Chhatrapati Sambhajinagar', 'leadCharge' => 105.98, 'unit' => 'M.T.', 'machinery' => 0, 'pol' => 0, 'reference' => 'Lead chart'],
+        ['material' => 'Stone', 'distanceKm' => 15, 'source' => 'Ekod Pachod', 'leadCharge' => 289.04, 'unit' => 'Cum', 'machinery' => 0, 'pol' => 0, 'reference' => 'Lead chart'],
+        ['material' => 'Metal above 40 mm', 'distanceKm' => 15, 'source' => 'Ekod Pachod', 'leadCharge' => 226.42, 'unit' => 'Cum', 'machinery' => 0, 'pol' => 0, 'reference' => 'Lead chart'],
+        ['material' => 'Metal below 40 mm', 'distanceKm' => 15, 'source' => 'Ekod Pachod', 'leadCharge' => 236.26, 'unit' => 'Cum', 'machinery' => 0, 'pol' => 0, 'reference' => 'Lead chart'],
+        ['material' => 'Sand', 'distanceKm' => 25, 'source' => 'Paithan', 'leadCharge' => 389.87, 'unit' => 'Cum', 'machinery' => 0, 'pol' => 0, 'reference' => 'Lead chart'],
+        ['material' => 'Soil', 'distanceKm' => 0.5, 'source' => 'Local', 'leadCharge' => 14.28, 'unit' => 'Cum', 'machinery' => 0, 'pol' => 0, 'reference' => 'Lead chart'],
+        ['material' => 'Steel gate', 'distanceKm' => 11, 'source' => 'PWD Chhatrapati Sambhajinagar', 'leadCharge' => 245.43, 'unit' => 'M.T.', 'machinery' => 0, 'pol' => 0, 'reference' => 'Lead chart'],
+    ];
+
+    $payload['gcmDesign'] = [
+        'cover' => [
+            'department' => 'Government of Maharashtra',
+            'region' => 'Soil & Water Conservation Department',
+            'circle' => 'Soil & Water Conservation Circle, Aurangabad',
+            'division' => 'Soil & W. C. Division, Chhatrapati Sambhajinagar',
+            'workName' => 'Gated Cement Bandhara No. 1 at Gandheli',
+            'location' => 'Taluka Chhatrapati Sambhajinagar, District Chhatrapati Sambhajinagar',
+            'year' => 'WCD for the year 2022-23, w.e.f. 6 March 2023',
+        ],
+        'geography' => [
+            ['Village', 'Gandheli'],
+            ['No.', '1'],
+            ['Taluka', 'Chhatrapati Sambhajinagar'],
+            ['Sub Division', 'Chhatrapati Sambhajinagar'],
+            ['District', 'Chhatrapati Sambhajinagar'],
+            ['Division', 'Chhatrapati Sambhajinagar'],
+            ['Latitude', '19 deg 49 min 33.98 sec N'],
+            ['Longitude', '75 deg 23 min 16.59 sec E'],
+            ['Catchment Area', '5.37 Sq.Km / 2.073 Sq.Mile'],
+            ['Yield', '510.40 TCM'],
+            ['River', 'Local nalla'],
+        ],
+        'survey' => [
+            ['30', '101.40', '-', '-', '-', '-'],
+            ['40', '100.38', '-', '-', '-', '-'],
+            ['50', '99.50', '-', '-', '-', '-'],
+            ['52', '99.40', '94.40', '2.50', '0.90', '1.00'],
+            ['54', '98.15', '94.40', '1.33', '0.60', '-'],
+            ['56', '97.74', '94.40', '0.99', '0.60', '-'],
+            ['58', '97.59', '94.40', '0.91', '0.60', '-'],
+            ['60', '97.50', '94.40', '1.00', '0.60', '0.90'],
+            ['62', '97.63', '94.40', '1.06', '0.60', '-'],
+            ['64', '97.95', '94.40', '1.32', '0.60', '-'],
+            ['66', '98.17', '94.40', '1.47', '0.60', '-'],
+            ['72', '99.39', '94.40', '2.49', '0.90', '1.00'],
+        ],
+        'siteData' => [
+            ['Length', '20.00 m'],
+            ['U/s Wing Wall', '5.00 m'],
+            ['Water Column', '2.50 m'],
+            ['Key Wall', '4.50 m'],
+            ['Foundation', '3.10 m'],
+            ['Sill', '97.50 m'],
+            ['Foundation Level', '94.40 m'],
+            ['FTL', '100.00 m'],
+            ['MWL', '100.90 m'],
+            ['TBL', '101.50 m'],
+        ],
+        'gradient' => [
+            ['U/S 0', '97.500', '-'],
+            ['30', '97.617', '0.117'],
+            ['60', '97.733', '0.117'],
+            ['90', '97.898', '0.165'],
+            ['120', '98.015', '0.117'],
+            ['150', '98.151', '0.137'],
+            ['180', '98.262', '0.111'],
+            ['210', '98.388', '0.127'],
+            ['240', '98.532', '0.144'],
+            ['270', '98.642', '0.111'],
+            ['300', '98.766', '0.124'],
+            ['330', '98.872', '0.107'],
+            ['360', '99.037', '0.165'],
+            ['390', '99.127', '0.090'],
+            ['D/S -150', '96.937', '0.110'],
+        ],
+        'hydraulicSummary' => [
+            ['Gradient', '0.0040556'],
+            ['Slope', '1 in 246.57'],
+            ['Flood Lift', '0.90 m'],
+            ['Free Board', '0.60 m'],
+            ['Design Discharge', '127.36 Cumecs'],
+            ['Passing Discharge at HFL 100.00', '96.54 Cumecs'],
+            ['Velocity', '2.0338 m/sec'],
+        ],
+        'capacity' => [
+            ['97.50', '0.00', '0.000', '0.000', 'NBL'],
+            ['98.00', '5.00', '0.834', '0.029', ''],
+            ['98.50', '20.01', '6.670', '0.236', 'S/C'],
+            ['99.00', '24.07', '17.674', '0.624', ''],
+            ['99.50', '28.50', '30.800', '1.088', 'FTL'],
+            ['100.00', '33.64', '46.317', '1.636', ''],
+            ['100.50', '39.20', '64.508', '2.279', 'S/C'],
+            ['101.50', '51.12', '109.537', '3.869', 'S/C'],
+        ],
+        'rainfall' => [
+            ['1975', '1042.60', '1975', '1042.60'],
+            ['1976', '645.30', '1988', '1007.00'],
+            ['1977', '817.00', '1979', '931.00'],
+            ['1978', '660.50', '2006', '918.20'],
+            ['1979', '931.00', '1990', '907.00'],
+            ['1980', '778.80', '1998', '859.00'],
+            ['1981', '373.00', '1977', '817.00'],
+            ['1988', '1007.00', '2008', '626.30 (50%)'],
+            ['2015', '459.20', '2012', '239.00'],
+        ],
+        'rainfallSummary' => [
+            ['Total rainfall', '25614.50 mm'],
+            ['Average rainfall', '624.74 mm / 24.60 inch'],
+            ['50% dependable rainfall', '626.30 mm / 24.66 inch'],
+        ],
+        'features' => [
+            ['Latitude', '19 deg 49 min 33.98 sec N'],
+            ['Longitude', '75 deg 23 min 16.59 sec E'],
+            ['Village', 'Gandheli'],
+            ['Lowest NBL', '97.50 m'],
+            ['Sill Level', '97.50 m'],
+            ['FTL', '100.00 m'],
+            ['Yield per Sq.Mile', '8.69 Mcft/Sq.Mile'],
+            ['Catchment Area', '2.07 Sq.Mile'],
+            ['Total water available', '510.40 TCM'],
+            ['Storage capacity', '46.32 TCM'],
+            ['Top level of weirs', '101.50 m'],
+            ['Foundation Level', '94.40 m'],
+            ['Nalla bed width', '20.00 m'],
+            ['Total project cost', 'Rs. 7970290'],
+            ['Cost per TCM', 'Rs. 172082 < Rs. 182642'],
+            ['B.C. Ratio', '1.12 > 1'],
+            ['ERR', '12.72 > 12.00'],
+        ],
+        'yield' => [
+            ['Catchment Area', '5.37 Sq.Km / 2.073 Sq.Mile'],
+            ['Nature of catchment', 'Good / Average'],
+            ['Average mansoon rainfall', '24.60 inch'],
+            ['50% dependable rainfall', '24.66 inch'],
+            ['Yield per Sq.Mile', '8.69 Mcft/Sq.Mile'],
+            ['Total yield at site', '18.02 Mcft / 510.40 TCM'],
+            ['FTL fixed at RL', '100.00 m'],
+            ['Capacity', '1.64 Mcft / 46.333 TCM'],
+        ],
+        'hfl' => [
+            ['-30', '104.51', '100.00', '0.00', '0.00'],
+            ['30', '101.40', '100.00', '0.00', '0.00'],
+            ['50', '99.50', '100.00', '0.50', '2.50'],
+            ['54', '98.15', '100.00', '1.85', '2.45'],
+            ['58', '97.59', '100.00', '2.41', '4.67'],
+            ['60', '97.50', '100.00', '2.50', '4.91'],
+            ['66', '98.17', '100.00', '1.83', '8.40'],
+            ['72', '99.39', '100.00', '0.61', '7.32'],
+            ['90', '99.90', '100.00', '0.10', '6.39'],
+            ['Total', '', '', 'Area', '47.47 Sqm'],
+        ],
+        'mwl' => [
+            ['30', '101.40', '100.90', '0.00', '0.00'],
+            ['40', '100.38', '100.90', '0.52', '2.60'],
+            ['50', '99.50', '100.90', '1.40', '9.60'],
+            ['54', '98.15', '100.90', '2.75', '4.25'],
+            ['60', '97.50', '100.90', '3.40', '6.71'],
+            ['66', '98.17', '100.90', '2.73', '12.00'],
+            ['72', '99.39', '100.90', '1.51', '12.72'],
+            ['90', '99.90', '100.90', '1.00', '22.59'],
+            ['Total', '', '', 'Area', '99.92 Sqm'],
+        ],
+        'formulaBlocks' => [
+            [
+                'title' => 'Velocity and Discharge at HFL',
+                'lines' => [
+                    'C/s Area A = 47.47 Sqm',
+                    'Perimeter P = 50.62 m',
+                    'Bed Gradient S = 1 / 246.57',
+                    'Value N = 0.030',
+                    'R = A / P = 47.47 / 50.62 = 0.938 m',
+                    'V = (R)^(2/3) / (N x sqrt(S)) = 2.03 m/sec',
+                    'Q = A x V = 47.47 x 2.034 = 96.54 Cumecs',
+                ],
+            ],
+            [
+                'title' => 'Discharge Calculation',
+                'lines' => [
+                    'Total catchment area = 5.37 Sq.Km',
+                    'Q = C x sqrt(A)',
+                    'Q = 54.96 x sqrt(5.37)',
+                    'Q = 127.36 Cumecs = 4498.36 Cusecs',
+                    'Provided flood lift = 0.90 m',
+                ],
+            ],
+            [
+                'title' => 'Afflux Calculation',
+                'lines' => [
+                    'Obstruction area = 13.75 - 6.00 = 7.75 Sqm',
+                    'Flowing area = 47.47 - 7.75 = 39.72 Sqm',
+                    'Molesworth afflux = 0.048 m',
+                    'Say afflux = 0.050 m',
+                    'AHFL = 100.050 m',
+                ],
+            ],
+        ],
+        'weirAssumptions' => [
+            ['Top width of weir', '0.60 m'],
+            ['Bottom width of weir', '3.80 m'],
+            ['Height of weir', '5.60 m'],
+            ['Specific gravity of concrete', '2.40'],
+            ['Coefficient of friction', '0.70'],
+            ['Water column', '2.50 m'],
+        ],
+        'stability' => [
+            ['Weir body wall', '0.68', 'Within middle third, section safe'],
+            ['Toe wall', '0.60', 'Adopted'],
+            ['Abutment', '0.50', 'Within permissible eccentricity'],
+            ['Apron required', '2.74', 'Provided 3.10 m'],
+        ],
+        'bcr' => [
+            ['Annual net benefit', 'Rs. 1486.29 thousand'],
+            ['Annual cost', 'Rs. 1329.00 thousand'],
+            ['B.C. Ratio @ 9.50%', '1.117054 > 1'],
+            ['B.C. Ratio @ 10.50%', '1.077'],
+            ['Irrigable area', '12.00 Hectare'],
+        ],
+        'cropPattern' => [
+            ['Wheat', '15%', '98000'],
+            ['Gram', '35%', '102400'],
+            ['Rabbi Jawar', '25%', '98470'],
+            ['Saffola', '10%', '167500'],
+            ['Vegetables', '15%', '213000'],
+            ['Total', '100%', ''],
+        ],
+        'err' => [
+            ['Cost analysis', 'Major works, land development and O&M considered'],
+            ['B.C. Ratio @ 9.50%', '690.738'],
+            ['B.C. Ratio @ 10.50%', '476.469'],
+            ['ERR', '12.719 > 12.00'],
+        ],
+        'generalAbstract' => [
+            ['Preliminary', '100000'],
+            ['Main work', '7017570'],
+            ['Royalty', '142000'],
+            ['GST and contingencies', '710720'],
+            ['Total', '7970290'],
+        ],
+        'measurementGroups' => [
+            ['Excavation', 'Soil, hard murum, soft rock and hard rock by classification with foundation levels.'],
+            ['Concrete', 'M15 concrete in weir body, abutment, pier, key wall and apron.'],
+            ['Steel', 'Reinforcement, sill beam, vertical channel and mild steel needles.'],
+            ['Protection', 'Dry rubble pitching, rubble soling and nalla deepening statement.'],
+        ],
+        'compliance' => [
+            ['Village name', 'Gandheli'],
+            ['River name', 'Local nalla'],
+            ['Geo tagging', 'Lat 19 deg 49 min 33.98 sec N, Long 75 deg 23 min 16.59 sec E'],
+            ['Gradient', '0.41%'],
+            ['Recharge area classification', 'Third'],
+            ['Proposed length', '20 m'],
+            ['Foundation depth', '3.10 m'],
+            ['Irrigation area', '12.00 Hectare'],
+            ['Beneficiaries', '20'],
+            ['Submergence area', '3.36 Hectare'],
+            ['Land acquisition required', 'No'],
+        ],
+        'drawingSheets' => [
+            ['Drawing 1', 'Index map', 'To be attached from GIS/CAD'],
+            ['Drawing 2', 'Catchment area map', 'To be attached from GIS/CAD'],
+            ['Drawing 3', 'Topo sheet', 'To be attached from GIS/CAD'],
+            ['Drawing 4', 'Village map showing command area', 'To be attached from GIS/CAD'],
+            ['Drawing 5', 'Plan & L-section of weir', 'Generated schematic until CAD drawing is uploaded'],
+            ['Drawing 6', 'Contour plan & L-section', 'Generated schematic until contour image is uploaded'],
+            ['Drawing 7', 'Lead map', 'To be attached from GIS/CAD'],
         ],
     ];
 
@@ -599,6 +912,7 @@ function seedProjects(PDO $pdo): void
         ['name' => 'Demo Bridge - Canal Crossing Estimate', 'work_type' => 'Bridge', 'payload' => bridgeTemplate()],
         ['name' => 'Demo Road - Flexible Pavement Estimate', 'work_type' => 'Road', 'payload' => workTemplate('Road', 'Demo Road - Flexible Pavement Estimate', 'Village road with WMM, DBM and BC layers', 5400000, ['Earthwork excavation', 'Granular sub-base', 'Wet mix macadam', 'Dense bituminous macadam', 'Bituminous concrete', 'Road markings'])],
         ['name' => 'Demo Bandhara - KT Weir Estimate', 'work_type' => 'Kolhapuri Bandhara', 'payload' => workTemplate('Kolhapuri Bandhara', 'Demo Bandhara - KT Weir Estimate', 'Gated storage weir with river training works', 12800000, ['Cutoff excavation', 'M15 foundation concrete', 'UCR masonry', 'RCC piers', 'Needle gates', 'Stone pitching'])],
+        ['name' => 'Demo GCM - Gandheli No. 1', 'work_type' => 'GCM', 'payload' => gcmTemplate()],
     ];
 
     $select = $pdo->prepare('SELECT id FROM projects WHERE name = ? LIMIT 1');
@@ -787,6 +1101,49 @@ function bridgeItems(): array
     }, $rows);
 }
 
+function gcmItems(): array
+{
+    $rows = [
+        [1, 'Excavation in all kinds of soil including boulders upto 0.6 m dia with lead upto 1 km and 6 m lift.', 38.20, 'Cum', 940.00, 0, 0, 0, 15.50, 4.20],
+        [2, 'Excavation in hard murum including boulders upto 0.6 m dia with placing excavated material neatly.', 49.40, 'Cum', 420.00, 0, 0, 0, 18.00, 5.40],
+        [3, 'Excavation in soft rock without blasting including dressing bed and sides to required profile.', 64.25, 'Cum', 310.00, 0, 0, 0, 22.00, 7.20],
+        [4, 'Excavation in hard rock by blasting with line drilling or smooth blasting techniques.', 409.10, 'Cum', 185.00, 0, 0, 0, 110.00, 46.00],
+        [5, 'Providing and laying in situ cement concrete M-15 for weir, abutment, pier, key wall and apron.', 5751.80, 'Cum', 545.00, 27.55, 0, 450.00, 890.00, 210.00],
+        [6, 'Providing, cutting, bending, laying and tying M.S./HYSD/TMT bars for reinforcement of RCC work.', 80391.85, 'MT', 15.80, 0, 0, 3500.00, 14800.00, 1900.00],
+        [7, 'Providing and fixing M.S. sill beam ISWB-150 as per detailed design and specifications.', 1308.10, 'Rmt', 40.00, 0, 0, 85.00, 210.00, 35.00],
+        [8, 'Providing and fixing M.S. vertical channel 150 mm x 100 mm fabricated from 8 mm MS plate.', 2016.80, 'Rmt', 52.00, 0, 0, 135.00, 340.00, 55.00],
+        [9, 'Providing and fixing mild steel needle gate 2120 x 500 mm size as per detailed design.', 10869.20, 'Nos', 22.00, 0, 0, 520.00, 980.00, 180.00],
+        [10, 'Back filling behind canal structures with approved material in layers not exceeding 20 cm.', 56.15, 'Cum', 820.00, 0, 0, 8.00, 21.00, 4.00],
+        [11, 'Providing and constructing 300 mm thick dry rubble pitching with pin headers and stone chips.', 265.05, 'Sqm', 680.00, 0, 18.00, 26.00, 78.00, 12.00],
+        [12, 'Providing and laying rubble soling below foundation in layers including rubble chips and murum.', 1479.75, 'Cum', 140.00, 0, 32.00, 85.00, 220.00, 42.00],
+        [13, 'Providing and fixing canal information board with MS sheet, angle frame, painting and fixing.', 6547.25, 'Nos', 1.00, 0, 0, 240.00, 860.00, 110.00],
+        [14, 'Royalty provision for sand, metal, rubble and other minor minerals with surcharge and cess.', 237.44, 'Cum', 410.00, 0, 237.44, 0, 0, 0],
+    ];
+
+    return array_map(function ($row) {
+        [$no, $description, $rate, $unit, $qty, $cementRate, $royaltyRate, $machineryRate, $labourRate, $polRate] = $row;
+        return [
+            'itemNo' => $no,
+            'description' => $description,
+            'rate' => $rate,
+            'unit' => $unit,
+            'quantity' => $qty,
+            'cementRate' => $cementRate,
+            'royaltyRate' => $royaltyRate,
+            'machineryRate' => $machineryRate,
+            'labourRate' => $labourRate,
+            'polRate' => $polRate,
+            'materialRate' => max(0, $rate - $cementRate - $royaltyRate - $machineryRate - $labourRate - $polRate),
+            'analysis' => [
+                ['particular' => 'WCD CSR / RSR base rate and applicable schedule item', 'amount' => round($rate * 0.86, 2)],
+                ['particular' => 'Lead, lift and material loading as per Gandheli lead chart', 'amount' => round($rate * 0.09, 2)],
+                ['particular' => 'Labour welfare charges 1%', 'amount' => round($rate * 0.01, 2)],
+                ['particular' => 'Rounded rate adopted', 'amount' => $rate],
+            ],
+        ];
+    }, $rows);
+}
+
 function projectPayload(array $body, ?array $base = null): array
 {
     $payload = $body['payload'] ?? $base ?? emptyTemplate($body['work_type'] ?? 'Bridge');
@@ -809,7 +1166,12 @@ function enrichDesignPayload(array $payload): array
         $payload['roadDesign'] = array_replace_recursive($default['roadDesign'], $payload['roadDesign'] ?? []);
     }
 
-    if ($workType !== 'Bridge Design' && $workType !== 'Road Design' && empty($payload['design']) && empty($payload['roadDesign'])) {
+    if ($workType === 'GCM' || !empty($payload['gcmDesign'])) {
+        $default = gcmTemplate();
+        $payload['gcmDesign'] = array_replace_recursive($default['gcmDesign'], $payload['gcmDesign'] ?? []);
+    }
+
+    if ($workType !== 'Bridge Design' && $workType !== 'Road Design' && $workType !== 'GCM' && empty($payload['design']) && empty($payload['roadDesign']) && empty($payload['gcmDesign'])) {
         return $payload;
     }
     return $payload;

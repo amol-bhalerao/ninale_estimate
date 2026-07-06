@@ -1091,6 +1091,156 @@ details[open] summary {
   margin: 8px 0 0;
 }
 
+.gcm-page .signatures {
+  margin-top: 42px;
+}
+
+.gcm-page h3 {
+  color: #142033;
+  font-size: 0.86rem;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+.gcm-two-col {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.gcm-form-page,
+.gcm-report-text,
+.gcm-certificate {
+  border: 1px solid #cddcec;
+  border-radius: 8px;
+  color: #142033;
+  font-size: 0.88rem;
+  line-height: 1.75;
+  padding: 18px 22px;
+}
+
+.gcm-form-page p,
+.gcm-report-text p {
+  margin: 0 0 12px;
+}
+
+.gcm-certificate {
+  margin: 0;
+  padding-left: 42px;
+}
+
+.gcm-certificate li {
+  margin-bottom: 10px;
+}
+
+.gcm-weir-sketch {
+  background:
+    linear-gradient(#ffffff, #fbfdff),
+    repeating-linear-gradient(0deg, transparent 0 23px, rgba(148, 163, 184, 0.22) 24px);
+  border: 1px solid #9fb0bf;
+  height: 320px;
+  margin-top: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.gcm-tbl,
+.gcm-mwl,
+.gcm-ftl,
+.gcm-foundation,
+.gcm-keywall,
+.gcm-apron,
+.gcm-body {
+  position: absolute;
+}
+
+.gcm-tbl,
+.gcm-mwl,
+.gcm-ftl {
+  background: #fff;
+  color: #142033;
+  font-size: 0.72rem;
+  font-weight: 900;
+  left: 7%;
+  padding: 2px 6px;
+  right: 7%;
+}
+
+.gcm-tbl {
+  border-top: 2px solid #142033;
+  top: 13%;
+}
+
+.gcm-mwl {
+  border-top: 1.5px dashed #2563eb;
+  top: 27%;
+}
+
+.gcm-ftl {
+  border-top: 1.5px dashed #0f766e;
+  top: 40%;
+}
+
+.gcm-body {
+  align-items: center;
+  background: #f8fbff;
+  border: 2px solid #142033;
+  bottom: 20%;
+  color: #142033;
+  display: flex;
+  font-size: 0.82rem;
+  font-weight: 900;
+  justify-content: center;
+  left: 42%;
+  line-height: 1.35;
+  text-align: center;
+  top: 25%;
+  width: 16%;
+}
+
+.gcm-foundation {
+  border-top: 7px solid #142033;
+  bottom: 15%;
+  color: #142033;
+  font-size: 0.74rem;
+  font-weight: 900;
+  left: 26%;
+  padding-top: 7px;
+  right: 26%;
+  text-align: center;
+}
+
+.gcm-keywall {
+  background: #142033;
+  bottom: 5%;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  left: 48%;
+  padding-top: 42px;
+  text-align: center;
+  top: 75%;
+  width: 4%;
+}
+
+.gcm-apron {
+  border-top: 4px solid #687789;
+  bottom: 23%;
+  color: #142033;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-align: center;
+  width: 190px;
+}
+
+.gcm-apron.upstream {
+  left: 13%;
+}
+
+.gcm-apron.downstream {
+  right: 13%;
+}
+
 .compact-heading {
   margin-top: 18px;
 }
@@ -1996,6 +2146,33 @@ details[open] summary {
 
   .compartment-page .design-table {
     font-size: 0.5rem;
+  }
+
+  .gcm-page .simple-table,
+  .gcm-page .design-table {
+    font-size: 0.5rem;
+  }
+
+  .gcm-page .signatures {
+    margin-top: 18px;
+  }
+
+  .gcm-form-page,
+  .gcm-report-text,
+  .gcm-certificate {
+    border-radius: 0;
+    font-size: 0.62rem;
+    line-height: 1.45;
+    padding: 10px 14px;
+  }
+
+  .gcm-two-col {
+    gap: 8px;
+  }
+
+  .gcm-weir-sketch {
+    height: 92mm;
+    margin-top: 6px;
   }
 
   .bridge-sketch {
