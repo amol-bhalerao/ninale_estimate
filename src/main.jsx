@@ -880,21 +880,21 @@ const GCM_SECTION_TITLES = [
   "Rainfall Data",
   "Principal Features",
   "Yield Calculation",
-  "Capacity Table",
-  "Bed Fall / Gradient",
-  "HFL Calculation at FTL",
+  "4 Gradient Calculation",
+  "5 Hydraulic Calculation",
+  "6 Capacity",
   "HFL Calculation at MWL",
   "Afflux Calculation",
   "Discharge Calculation",
   "Hydraulic Jump & Apron",
   "Design of Weir Body Wall",
-  "Stability Check",
+  "11 Stability",
   "Wing & Abutment Wall",
-  "Benefit Cost Ratio Calculation",
+  "8 BC Ratio",
   "Water Requirement Statement",
-  "Annual Cost Calculation",
-  "Crop Pattern & Produce Statements",
-  "ERR Calculation",
+  "10 Cost",
+  "7 Cropping Pattern",
+  "9 ERR",
   "Statement No.2 - Irrigated Produce",
   "Statement No.1 - Unirrigated Produce",
   "Crop Water Schedule - Hybrid Jawar",
@@ -1387,6 +1387,109 @@ function gcmRateRows(items, start, count) {
   ]);
 }
 
+function gcmCapacityRows(rawRows = []) {
+  const numericRows = rawRows.filter((row) => row[0] !== "Total").map((row) => {
+    const level = Number(row[0] || 0);
+    const area = Number(row[1] || 0);
+    return { level, area, remark: row[4] || "" };
+  });
+  let successive = 0;
+  const rows = numericRows.map((row, index) => {
+    const prevArea = index ? numericRows[index - 1].area : 0;
+    const interval = index ? (row.level - numericRows[index - 1].level).toFixed(2) : "";
+    const rootArea = Math.sqrt(row.area).toFixed(3);
+    const sumArea = (prevArea + row.area).toFixed(3);
+    const rootProduct = Math.sqrt(prevArea * row.area).toFixed(3);
+    const capTcm = index ? (((prevArea + row.area + Math.sqrt(prevArea * row.area)) / 3) * Number(interval)).toFixed(3) : "";
+    successive += Number(capTcm || 0);
+    return [
+      index + 1,
+      row.level.toFixed(2),
+      row.area.toFixed(2),
+      rootArea,
+      sumArea,
+      rootProduct,
+      interval,
+      capTcm,
+      successive ? successive.toFixed(3) : "",
+      successive ? (successive * 0.035315).toFixed(3) : "",
+      row.remark,
+    ];
+  });
+  rows.push(["Total", "", "", "", "", "", "", "", successive.toFixed(3), (successive * 0.035315).toFixed(3), ""]);
+  return rows;
+}
+
+function GcmReferenceLabels() {
+  const labels = [
+    ["4", "Gradient Calculation"],
+    ["5", "Hydraulic Calculation"],
+    ["6", "Capacity"],
+    ["7", "Cropping Pattern"],
+    ["8", "BC Ratio"],
+    ["9", "ERR"],
+    ["10", "Cost"],
+    ["11", "Stability"],
+  ];
+  return (
+    <div className="gcm-reference-labels">
+      {labels.map(([number, label]) => (
+        <div key={number}>
+          <strong>{number}</strong>
+          <span>{label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function GcmHydraulicCalculation({ gcm }) {
+  return (
+    <div className="gcm-hydraulic-sheet">
+      <div className="hydraulic-topline"><span>Average</span><strong>46.333 TCM</strong></div>
+      <div className="hydraulic-formula">
+        <div className="stacked-values">
+          <span>25.00</span><b>8.973</b>
+          <span>24.00</span><b>8.154</b>
+          <i />
+          <span>1</span><b>0.819</b>
+          <span>0.66</span><b></b>
+        </div>
+        <div className="fraction">
+          <span>0.66</span>
+          <span>X</span>
+          <span>0.819</span>
+          <i>1</i>
+        </div>
+        <div className="hydraulic-result">
+          <span>8.15</span>
+          <span>+</span>
+          <span>0.54</span>
+          <span>=</span>
+          <strong>8.69</strong>
+          <small>Mcft / Sqmile</small>
+        </div>
+      </div>
+      <FormulaBlocks blocks={(gcm.formulaBlocks || []).slice(0, 1)} />
+    </div>
+  );
+}
+
+function GcmCapacityTable({ rows = [] }) {
+  const capacityRows = gcmCapacityRows(rows);
+  return (
+    <div className="gcm-capacity-wrap">
+      <div className="gcm-ftl-line">FTL=&nbsp;&nbsp;&nbsp;&nbsp;100.00</div>
+      <DesignTable
+        className="gcm-capacity-table"
+        serial={false}
+        headers={["Sr. No.", "Reduce Level", "Area in 1000 M²", "√A", "A1+A2", "√A1 XA2", "Cont Int", "Cap in TCM.", "Succ. CAP. TCM", "Cap. In Mcft.", "Remark"]}
+        rows={capacityRows}
+      />
+    </div>
+  );
+}
+
 function GcmStatementPages({ payload, gcm, totals, page }) {
   const items = totals.computedItems || [];
   const baseCost = totals.tenderAmount || 1000000;
@@ -1485,6 +1588,7 @@ function GcmReportPages({ payload, startPageNo }) {
           <section>
             <h3>Geographical Information</h3>
             <SimpleTable rows={gcm.geography || []} />
+            <GcmReferenceLabels />
           </section>
           <section>
             <h3>Lead Chart</h3>
@@ -1549,27 +1653,27 @@ function GcmReportPages({ payload, startPageNo }) {
       {page(6, "Principal Features", <SimpleTable rows={gcm.features || []} />, { accent: "Features" })}
       {page(7, "Yield Calculation", <SimpleTable rows={gcm.yield || []} />, { accent: "Yield" })}
 
-      {page(8, "Capacity Table", (
-        <DesignTable headers={["Reduced Level", "Area 1000 Sqm", "Successive Cap. TCM", "Cap. Mcft", "Remark"]} rows={gcm.capacity || []} />
-      ), { landscape: true, accent: "Capacity" })}
-
-      {page(9, "Bed Fall / Gradient Calculation", (
+      {page(8, "4 Gradient Calculation", (
         <>
           <DesignTable headers={["Chainage", "NBL", "Difference"]} rows={gcm.gradient || []} />
           <SimpleTable rows={(gcm.hydraulicSummary || []).slice(0, 2)} />
         </>
       ), { landscape: true, accent: "Gradient" })}
 
-      {page(10, "HFL Calculation on Proposed Site - FTL 100.00", (
-        <>
-          <DesignTable headers={["Ch", "GL", "HFL", "Height", "Area"]} rows={gcm.hfl || []} />
-          <FormulaBlocks blocks={(gcm.formulaBlocks || []).slice(0, 1)} />
-        </>
-      ), { landscape: true, accent: "HFL" })}
+      {page(9, "5 Hydraulic Calculation", (
+        <GcmHydraulicCalculation gcm={gcm} />
+      ), { landscape: true, accent: "Hydraulic" })}
+
+      {page(10, "6 Capacity", (
+        <GcmCapacityTable rows={gcm.capacity || []} />
+      ), { landscape: true, accent: "Capacity" })}
 
       {page(11, "HFL Calculation on Proposed Site - MWL 100.90", (
-        <DesignTable headers={["Ch", "GL", "MWL", "Height", "Area"]} rows={gcm.mwl || []} />
-      ), { landscape: true, accent: "MWL" })}
+        <>
+          <DesignTable headers={["Ch", "GL", "HFL", "Height", "Area"]} rows={gcm.hfl || []} />
+          <DesignTable headers={["Ch", "GL", "MWL", "Height", "Area"]} rows={gcm.mwl || []} />
+        </>
+      ), { landscape: true, accent: "HFL" })}
 
       {page(12, "Afflux Calculation", <FormulaBlocks blocks={(gcm.formulaBlocks || []).slice(2, 3)} />, { accent: "Afflux" })}
       {page(13, "Discharge Calculation", <FormulaBlocks blocks={(gcm.formulaBlocks || []).slice(1, 2)} />, { accent: "Discharge" })}
@@ -1585,13 +1689,13 @@ function GcmReportPages({ payload, startPageNo }) {
         </>
       ), { landscape: true, accent: "Weir Design" })}
 
-      {page(16, "Stability Check", <DesignTable headers={["Particular", "Value", "Remark"]} rows={gcm.stability || []} />, { accent: "Stability" })}
+      {page(16, "11 Stability", <DesignTable headers={["Particular", "Value", "Remark"]} rows={gcm.stability || []} />, { accent: "Stability" })}
 
       {page(17, "Wing & Abutment Wall", (
         <SimpleTable rows={[["Top width", "0.60 m"], ["Foundation depth", "3.10 m"], ["Abutment eccentricity", "0.50 m"], ["Result", "Within permissible limit"]]} />
       ), { accent: "Abutment" })}
 
-      {page(18, "Benefit Cost Ratio Calculation", (
+      {page(18, "8 BC Ratio", (
         <>
           <SimpleTable rows={gcm.bcr || []} />
           <DesignTable headers={["Crop", "% Age", "Benefit per Hect"]} rows={gcm.cropPattern || []} />
@@ -1602,13 +1706,13 @@ function GcmReportPages({ payload, startPageNo }) {
         <DesignTable headers={["Crop", "% Age", "Area", "Water Requirement Basis"]} rows={(gcm.cropPattern || []).filter((row) => row[0] !== "Total").map((row) => [row[0], row[1], "12.00 Ha proportionate", "Modified Penman method"])} />
       ), { landscape: true, accent: "Water" })}
 
-      {page(20, "Annual Cost Calculation", <SimpleTable rows={[["Irrigable area", "12.00 Hect"], ["Cropping pattern", "Attached"], ["Cost of project", `Rs. ${currency(totals.tenderAmount)}`], ["Annual O&M", "As per WCD norms"], ["Annual cost", "Rs. 1329.00 thousand"]]} />, { accent: "Annual Cost" })}
+      {page(20, "10 Cost", <SimpleTable rows={[["Irrigable area", "12.00 Hect"], ["Cropping pattern", "Attached"], ["Cost of project", `Rs. ${currency(totals.tenderAmount)}`], ["Annual O&M", "As per WCD norms"], ["Annual cost", "Rs. 1329.00 thousand"]]} />, { accent: "Cost" })}
 
-      {page(21, "Crop Pattern & Produce Statements", (
+      {page(21, "7 Cropping Pattern", (
         <DesignTable headers={["Crop", "% Age", "Benefit per Hect"]} rows={gcm.cropPattern || []} />
       ), { landscape: true, accent: "Produce" })}
 
-      {page(22, "ERR Calculation", <SimpleTable rows={gcm.err || []} />, { accent: "ERR" })}
+      {page(22, "9 ERR", <SimpleTable rows={gcm.err || []} />, { accent: "ERR" })}
       <GcmStatementPages payload={payload} gcm={gcm} totals={totals} page={page} />
     </>
   );
@@ -1751,12 +1855,17 @@ function DesignCover({ design }) {
   );
 }
 
-function DesignTable({ headers, rows = [] }) {
+function DesignTable({ headers, rows = [], serial = true, className = "" }) {
+  const displayHeaders = serial ? ["Sr. No.", ...headers] : headers;
   return (
-    <table className="simple-table design-table">
-      <thead><tr>{headers.map((header, index) => <th key={`${header}-${index}`}>{header}</th>)}</tr></thead>
+    <table className={clsx("simple-table design-table", className)}>
+      <thead><tr>{displayHeaders.map((header, index) => <th key={`${header}-${index}`}>{header}</th>)}</tr></thead>
       <tbody>
-        {rows.map((row, index) => <tr key={index}>{row.map((cell, cellIndex) => <td key={`${index}-${cellIndex}`}>{cell}</td>)}</tr>)}
+        {rows.map((row, index) => {
+          const isTotal = String(row[0] || "").toLowerCase().includes("total");
+          const cells = serial ? [isTotal ? "" : index + 1, ...row] : row;
+          return <tr className={isTotal ? "total-row" : ""} key={index}>{cells.map((cell, cellIndex) => <td key={`${index}-${cellIndex}`}>{cell}</td>)}</tr>;
+        })}
       </tbody>
     </table>
   );
